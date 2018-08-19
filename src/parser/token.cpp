@@ -200,6 +200,10 @@ const char* getTokenName(Token::Kind kind) {
         return "LiteralFloat";
     case Token::Kind::LiteralInteger:
         return "LiteralInteger";
+    case Token::Kind::LiteralCRawString:
+        return "LiteralCRawString";
+    case Token::Kind::LiteralCString:
+        return "LiteralCString";
     case Token::Kind::LiteralRawString:
         return "LiteralRawString";
     case Token::Kind::LiteralString:

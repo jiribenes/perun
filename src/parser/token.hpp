@@ -112,6 +112,9 @@ struct Token {
         LiteralChar,
         LiteralFloat,
         LiteralInteger,
+
+        LiteralCRawString,
+        LiteralCString,
         LiteralRawString,
         LiteralString,
 
