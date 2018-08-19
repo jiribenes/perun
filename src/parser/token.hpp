@@ -199,6 +199,10 @@ static const Keyword keywords[] = {
 
 bool isKeyword(const std::string& str);
 
+/// Returns a keyword token kind if string is a keyword
+/// otherwise returns Token::Kind::Invalid
+Token::Kind getKeyword(const std::string& str);
+
 } // namespace parser
 } // namespace perun
 

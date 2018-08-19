@@ -224,5 +224,15 @@ bool isKeyword(const std::string& str) {
     return false;
 }
 
+Token::Kind getKeyword(const std::string& str) {
+    for (const Keyword& kw : keywords) {
+        if (kw.str == str) {
+            return kw.kind;
+        }
+    }
+
+    return Token::Kind::Invalid;
+}
+
 } // namespace parser
 } // namespace perun
