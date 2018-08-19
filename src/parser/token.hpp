@@ -151,7 +151,7 @@ const char* getTokenName(Token::Kind kind);
 
 // TODO: ideally hide everything regarding keywords in the Token class
 struct Keyword {
-    const std::string& str;
+    const char* str;
     const Token::Kind kind;
 };
 
