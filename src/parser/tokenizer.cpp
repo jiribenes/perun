@@ -6,6 +6,7 @@
 
 /// Utility char functions
 namespace {
+
 inline bool isIdentifier(const char c) {
     return c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
@@ -30,7 +31,8 @@ Token Tokenizer::nextToken() {
 
     // complete is for avoiding goto
     // - indicates when a token is complete so we can stop this loop
-    for (bool complete = false; pos < input->size() && !complete; pos++) {
+    bool complete = false;
+    while (pos < input->size() && !complete) {
         // current char
         const char c = input->at(pos);
 
@@ -122,6 +124,7 @@ Token Tokenizer::nextToken() {
                     token.setKind(Token::Kind::Identifier);
                 } else {
                     token.setKind(Token::Kind::Invalid);
+                    pos++;
                     complete = true;
                 }
                 break;
@@ -153,7 +156,7 @@ Token Tokenizer::nextToken() {
                 break;
             }
             default: {
-                if (isIdentifier(c)) {
+                if (isIdentifier(c) || isNumeric(c)) { // alphanumeric | '_'
                     // c is followed by an identifier char =>
                     // c belongs to the identifier itself
                     state = State::Identifier;
@@ -280,7 +283,7 @@ Token Tokenizer::nextToken() {
             break;
         }
         case State::Identifier: {
-            if (isIdentifier(c)) {
+            if (isIdentifier(c) || isNumeric(c)) { // alphanumeric | '_'
                 // add to the identifier
                 break;
             }
@@ -309,9 +312,16 @@ Token Tokenizer::nextToken() {
             assert(false);
         }
         }
+
+        // if we haven't finished the token, advance
+        if (!complete) {
+            pos++;
+        }
     }
 
-    if (pos == input->size()) {
+    // if we have reached the end of the input and still haven't finalized a
+    // single token:
+    if (pos == input->size() && !complete) {
         // finalize tokens
         switch (state) {
 
