@@ -824,6 +824,13 @@ Token Tokenizer::nextToken() {
     return token;
 }
 
+void Tokenizer::dumpToken(const Token& token) const {
+    // TODO: this copies for no real reason
+    const std::string source = input->substr(token.start, token.length());
+    std::cerr << getTokenName(token.getKind()) << " \"" << source << "\""
+              << std::endl;
+}
+
 // TODO: better error handling
 [[noreturn]] void Tokenizer::error(const std::string& message) {
     std::cerr << "Encountered an error!" << std::endl;

@@ -19,6 +19,11 @@ public:
     /// Last token will have kind 'Token::Kind::EndOfFile'
     Token nextToken();
 
+    // Dumps the token into stderr
+    // Assumes that the token was tokenized by this tokenizer
+    // from this 'input'
+    void dumpToken(const Token& token) const;
+
 private:
     std::unique_ptr<std::string> input;
 
