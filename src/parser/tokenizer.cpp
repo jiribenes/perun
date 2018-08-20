@@ -107,12 +107,98 @@ Token Tokenizer::nextToken() {
                 state = State::Ampersand;
                 break;
             }
+            case '@': {
+                token.setKind(Token::Kind::At);
+                pos++;
+                complete = true;
+                break;
+            }
+            case '\\': {
+                token.setKind(Token::Kind::Backslash);
+                pos++;
+                complete = true;
+                break;
+            }
             case '!': {
                 state = State::Bang;
                 break;
             }
+            case '^': {
+                token.setKind(Token::Kind::Caret);
+                pos++;
+                complete = true;
+                break;
+            }
+            case ':': {
+                token.setKind(Token::Kind::Colon);
+                pos++;
+                complete = true;
+                break;
+            }
+            case ',': {
+                token.setKind(Token::Kind::Comma);
+                pos++;
+                complete = true;
+                break;
+            }
             case '.': {
                 state = State::Dot;
+                break;
+            }
+            case '=': {
+                state = State::Eq;
+                break;
+            }
+            case '>': {
+                state = State::Greater;
+                break;
+            }
+            case '#': {
+                token.setKind(Token::Kind::Hash);
+                pos++;
+                complete = true;
+                break;
+            }
+            case '<': {
+                state = State::Less;
+                break;
+            }
+            case '-': {
+                state = State::Minus;
+                break;
+            }
+            case '%': {
+                state = State::Percent;
+                break;
+            }
+            case '|': {
+                state = State::Pipe;
+                break;
+            }
+            case '+': {
+                state = State::Plus;
+                break;
+            }
+            case '?': {
+                state = State::Question;
+                break;
+            }
+            case ';': {
+                token.setKind(Token::Kind::Semicolon);
+                pos++;
+                complete = true;
+                break;
+            }
+            case '/': {
+                state = State::Slash;
+                break;
+            }
+            case '*': {
+                state = State::Star;
+                break;
+            }
+            case '~': {
+                state = State::Tilde;
                 break;
             }
             default: {
@@ -282,6 +368,301 @@ Token Tokenizer::nextToken() {
             }
             break;
         }
+        case State::Eq: {
+            switch (c) {
+            case '=': { // ==
+                token.setKind(Token::Kind::EqEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            case '>': { // =>
+                token.setKind(Token::Kind::EqGreater);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: { // =
+                // backtrack, went too far
+                token.setKind(Token::Kind::Eq);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::Greater: {
+            switch (c) {
+            case '=': { // >=
+                token.setKind(Token::Kind::GreaterEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            case '>': { // >> or >>=
+                state = State::GreaterGreater;
+                break;
+            }
+            default: { // >
+                // backtrack, went too far
+                token.setKind(Token::Kind::Greater);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::GreaterGreater: {
+            switch (c) {
+            case '>': { // >>=
+                token.setKind(Token::Kind::GreaterGreaterEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: { // >>
+                // backtrack, went too far
+                token.setKind(Token::Kind::GreaterGreater);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::Less: {
+            switch (c) {
+            case '=': { // <=
+                token.setKind(Token::Kind::LessEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            case '<': { // << or <<=
+                state = State::LessLess;
+                break;
+            }
+            default: { // <
+                // backtrack, went too far
+                token.setKind(Token::Kind::Less);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::LessLess: {
+            switch (c) {
+            case '<': { // <<=
+                token.setKind(Token::Kind::LessLessEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: { // <<
+                // backtrack, went too far
+                token.setKind(Token::Kind::LessLess);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::Minus: {
+            switch (c) {
+            case '=': { // -=
+                token.setKind(Token::Kind::MinusEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            case '>': { // ->
+                token.setKind(Token::Kind::MinusGreater);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: { // -
+                // backtrack, went too far
+                token.setKind(Token::Kind::Minus);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::Percent: {
+            switch (c) {
+            case '=': { // %=
+                token.setKind(Token::Kind::PercentEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            case '%': { // %% or %%=
+                state = State::PercentPercent;
+                break;
+            }
+            default: { // %
+                // backtrack, went too far
+                token.setKind(Token::Kind::Percent);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::PercentPercent: {
+            switch (c) {
+            case '=': { // %%=
+                token.setKind(Token::Kind::PercentPercentEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: { // %%
+                // backtrack, went too far
+                token.setKind(Token::Kind::PercentPercent);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::Pipe: {
+            switch (c) {
+            case '=': { // |=
+                token.setKind(Token::Kind::PipeEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: {
+                // backtrack, went too far
+                token.setKind(Token::Kind::Pipe);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::Plus: {
+            switch (c) {
+            case '=': { // +=
+                token.setKind(Token::Kind::PlusEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            case '+': { // ++
+                token.setKind(Token::Kind::PlusPlus);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: {
+                // backtrack, went too far
+                token.setKind(Token::Kind::Plus);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::Question: {
+            switch (c) {
+            case '?': { // ?=
+                token.setKind(Token::Kind::QuestionEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: {
+                // backtrack, went too far
+                token.setKind(Token::Kind::Question);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::Slash: {
+            switch (c) {
+            case '/': { // '//' or '///'
+                state = State::SlashSlash;
+                break;
+            }
+            case '=': { // '//='
+                token.setKind(Token::Kind::SlashEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: { // '/'
+                // backtrack, went too far
+                token.setKind(Token::Kind::Slash);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::SlashSlash: {
+            switch (c) {
+            case '/': { // '///'
+                token.setKind(Token::Kind::SlashSlashSlash);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: { // '//'
+                // backtrack, went too far
+                token.setKind(Token::Kind::SlashSlash);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::Star: {
+            switch (c) {
+            case '=': { // *=
+                token.setKind(Token::Kind::StarEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            case '*': { // **
+                token.setKind(Token::Kind::StarStar);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: {
+                // backtrack, went too far
+                token.setKind(Token::Kind::Star);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::Tilde: {
+            switch (c) {
+            case '=': { // +=
+                token.setKind(Token::Kind::TildeEq);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: {
+                // backtrack, went too far
+                token.setKind(Token::Kind::Tilde);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
         case State::Identifier: {
             if (isIdentifier(c) || isNumeric(c)) { // alphanumeric | '_'
                 // add to the identifier
@@ -355,6 +736,67 @@ Token Tokenizer::nextToken() {
             token.setKind(Token::Kind::DotDot);
             break;
         }
+        case State::Eq: {
+            token.setKind(Token::Kind::Eq);
+            break;
+        }
+        case State::Greater: {
+            token.setKind(Token::Kind::Greater);
+            break;
+        }
+        case State::GreaterGreater: {
+            token.setKind(Token::Kind::GreaterGreater);
+            break;
+        }
+        case State::Less: {
+            token.setKind(Token::Kind::Less);
+            break;
+        }
+        case State::LessLess: {
+            token.setKind(Token::Kind::LessLess);
+            break;
+        }
+        case State::Minus: {
+            token.setKind(Token::Kind::Minus);
+            break;
+        }
+        case State::Percent: {
+            token.setKind(Token::Kind::Percent);
+            break;
+        }
+        case State::PercentPercent: {
+            token.setKind(Token::Kind::PercentPercent);
+            break;
+        }
+        case State::Pipe: {
+            token.setKind(Token::Kind::Pipe);
+            break;
+        }
+        case State::Plus: {
+            token.setKind(Token::Kind::Plus);
+            break;
+        }
+        case State::Question: {
+            token.setKind(Token::Kind::Question);
+            break;
+        }
+        case State::Slash: {
+            token.setKind(Token::Kind::Slash);
+            break;
+        }
+        case State::SlashSlash: {
+            token.setKind(Token::Kind::SlashSlash);
+            break;
+        }
+        case State::Star: {
+            token.setKind(Token::Kind::Star);
+            break;
+        }
+        case State::Tilde: {
+            token.setKind(Token::Kind::Tilde);
+            break;
+        }
+
         case State::Identifier: {
             // TODO: deduplicate this?
             // TODO: figure out a way to make a slice / a reference to input
