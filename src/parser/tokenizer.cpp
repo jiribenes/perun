@@ -64,6 +64,7 @@ Token Tokenizer::nextToken() {
                 token.setKind(Token::Kind::LiteralRawString);
                 break;
             }
+            // loosely follows the order of Token::Kind
             case '(': {
                 token.setKind(Token::Kind::LParen);
                 pos++;
@@ -113,10 +114,10 @@ Token Tokenizer::nextToken() {
                 break;
             }
             default: {
-                if (isNonzeroNumeric(c)) {
+                if (isNonzeroNumeric(c)) { // 1..9
                     state = State::Integer;
                     token.setKind(Token::Kind::LiteralInteger);
-                } else if (isIdentifier(c)) {
+                } else if (isIdentifier(c)) { // 'a'..'z' | 'A'..'Z' | '_'
                     state = State::Identifier;
                     token.setKind(Token::Kind::Identifier);
                 } else {
@@ -271,7 +272,7 @@ Token Tokenizer::nextToken() {
             }
             default: { // ..
                 // backtrack, went too far
-                token.setKind(Token::Kind::Dot);
+                token.setKind(Token::Kind::DotDot);
                 complete = true;
                 break;
             }
