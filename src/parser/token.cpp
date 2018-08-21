@@ -108,10 +108,6 @@ const char* getTokenName(Token::Kind kind) {
         return "Slash";
     case Token::Kind::SlashEq:
         return "SlashEq";
-    case Token::Kind::SlashSlash:
-        return "SlashSlash";
-    case Token::Kind::SlashSlashSlash:
-        return "SlashSlashSlash";
     case Token::Kind::Star:
         return "Star";
     case Token::Kind::StarEq:
@@ -210,6 +206,10 @@ const char* getTokenName(Token::Kind kind) {
         return "LiteralString";
     case Token::Kind::Identifier:
         return "Identifier";
+    case Token::Kind::LineComment:
+        return "LineComment";
+    case Token::Kind::DocComment:
+        return "DocComment";
     default:
         assert(false);
     }

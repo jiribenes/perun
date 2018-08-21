@@ -587,8 +587,9 @@ Token Tokenizer::nextToken() {
         }
         case State::Slash: {
             switch (c) {
-            case '/': { // '//' or '///'
-                state = State::SlashSlash;
+            case '/': { // LineComment or DocComment
+                state = State::LineCommentBegin;
+                token.setKind(Token::Kind::LineComment);
                 break;
             }
             case '=': { // '//='
@@ -600,23 +601,6 @@ Token Tokenizer::nextToken() {
             default: { // '/'
                 // backtrack, went too far
                 token.setKind(Token::Kind::Slash);
-                complete = true;
-                break;
-            }
-            }
-            break;
-        }
-        case State::SlashSlash: {
-            switch (c) {
-            case '/': { // '///'
-                token.setKind(Token::Kind::SlashSlashSlash);
-                pos++;
-                complete = true;
-                break;
-            }
-            default: { // '//'
-                // backtrack, went too far
-                token.setKind(Token::Kind::SlashSlash);
                 complete = true;
                 break;
             }
@@ -679,6 +663,58 @@ Token Tokenizer::nextToken() {
             }
 
             complete = true;
+            break;
+        }
+        case State::LineCommentBegin: {
+            switch (c) {
+            case '/': { // DocComment or LineComment
+                state = State::DocCommentBegin;
+                break;
+            }
+            case '\n': {
+                // end of a line comment
+                token.setKind(Token::Kind::LineComment);
+                complete = true;
+                break;
+            }
+            default: {
+                // definitely a line comment
+                state = State::LineComment;
+                break;
+            }
+            }
+            break;
+        }
+        case State::DocCommentBegin: {
+            switch (c) {
+            case '/': { // LineComment
+                state = State::LineComment;
+                break;
+            }
+            case '\n': {
+                // end of a doc comment
+                token.setKind(Token::Kind::DocComment);
+                complete = true;
+                break;
+            }
+            default: {
+                // definitely a doc comment
+                token.setKind(Token::Kind::DocComment);
+                state = State::DocComment;
+                break;
+            }
+            }
+            break;
+        }
+        case State::LineComment:
+        case State::DocComment: {
+            switch (c) {
+            case '\n': {
+                complete = true;
+                break;
+            }
+            default: { break; }
+            }
             break;
         }
         case State::Integer: {
@@ -784,10 +820,6 @@ Token Tokenizer::nextToken() {
             token.setKind(Token::Kind::Slash);
             break;
         }
-        case State::SlashSlash: {
-            token.setKind(Token::Kind::SlashSlash);
-            break;
-        }
         case State::Star: {
             token.setKind(Token::Kind::Star);
             break;
@@ -807,6 +839,16 @@ Token Tokenizer::nextToken() {
             if (keywordKind != Token::Kind::Invalid) {
                 token.setKind(keywordKind);
             }
+            break;
+        }
+        case State::LineCommentBegin:
+        case State::LineComment: {
+            token.setKind(Token::Kind::LineComment);
+            break;
+        }
+        case State::DocCommentBegin:
+        case State::DocComment: {
+            token.setKind(Token::Kind::DocComment);
             break;
         }
 

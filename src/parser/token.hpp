@@ -62,8 +62,6 @@ struct Token {
         Semicolon,
         Slash, // /
         SlashEq,
-        SlashSlash,
-        SlashSlashSlash,
         Star,
         StarEq,
         StarStar,
@@ -119,6 +117,10 @@ struct Token {
         LiteralString,
 
         Identifier,
+
+        // comments
+        LineComment,
+        DocComment,
     };
 
     Token(Kind kind, size_t start) : start(start), kind(kind) {}

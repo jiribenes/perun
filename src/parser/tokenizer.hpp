@@ -55,11 +55,16 @@ private:
         Plus,
         Question,
         Slash,
-        SlashSlash,
         Star,
         Tilde,
 
         Identifier,
+
+        LineCommentBegin,
+        LineComment,
+        DocCommentBegin,
+        DocComment,
+
         Integer,
     };
 
