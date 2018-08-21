@@ -66,6 +66,9 @@ private:
         DocComment,
 
         Integer,
+        BinaryInteger,
+        OctalInteger,
+        HexInteger,
     };
 
     State state;

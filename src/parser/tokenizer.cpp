@@ -219,9 +219,21 @@ Token Tokenizer::nextToken() {
             break;
         }
         case State::Zero: {
-            // TODO: handle 0b/0x/0o radixes
             switch (c) {
+            case 'b': {
+                state = State::BinaryInteger;
+                break;
+            }
+            case 'o': {
+                state = State::OctalInteger;
+                break;
+            }
+            case 'x': {
+                state = State::HexInteger;
+                break;
+            }
             default: {
+                // it's just a normal integer starting with zero
                 pos--;
                 state = State::Integer;
                 break;
@@ -725,6 +737,38 @@ Token Tokenizer::nextToken() {
             complete = true;
             break;
         }
+        case State::BinaryInteger: {
+            if (c == '0' || c == '1' || c == '_') {
+                break;
+            }
+
+            complete = true;
+            break;
+        }
+        case State::OctalInteger: {
+            auto isOctal = [](const char c) -> bool {
+                return c >= '0' && c <= '7';
+            };
+
+            if (isOctal(c) || c == '_') {
+                break;
+            }
+
+            complete = true;
+            break;
+        }
+        case State::HexInteger: {
+            auto isHexadecimal = [](const char c) -> bool {
+                return isNumeric(c) || (c >= 'A' && c <= 'F');
+            };
+
+            if (isHexadecimal(c) || c == '_') {
+                break;
+            }
+
+            complete = true;
+            break;
+        }
         case State::Invalid: {
             assert(false);
         }
@@ -746,7 +790,10 @@ Token Tokenizer::nextToken() {
         case State::C:
         case State::String:
         case State::RawString:
-        case State::Integer: {
+        case State::Integer:
+        case State::BinaryInteger:
+        case State::OctalInteger:
+        case State::HexInteger: {
             // these are fine without finalizing
             break;
         }
