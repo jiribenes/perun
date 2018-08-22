@@ -29,6 +29,7 @@ struct Token {
         BangEq,
         Caret,
         Colon,
+        ColonColon,
         Comma,
         Dot,
         DotDot,

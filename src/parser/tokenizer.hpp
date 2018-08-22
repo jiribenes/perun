@@ -41,6 +41,7 @@ private:
 
         Ampersand,
         Bang,
+        Colon,
         Dot,
         DotDot,
         Eq,

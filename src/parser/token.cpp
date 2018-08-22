@@ -42,6 +42,8 @@ const char* getTokenName(Token::Kind kind) {
         return "Caret";
     case Token::Kind::Colon:
         return "Colon";
+    case Token::Kind::ColonColon:
+        return "ColonColon";
     case Token::Kind::Comma:
         return "Comma";
     case Token::Kind::Dot:

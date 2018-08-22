@@ -130,9 +130,7 @@ Token Tokenizer::nextToken() {
                 break;
             }
             case ':': {
-                token.setKind(Token::Kind::Colon);
-                pos++;
-                complete = true;
+                state = State::Colon;
                 break;
             }
             case ',': {
@@ -325,6 +323,23 @@ Token Tokenizer::nextToken() {
             default: {
                 // backtrack, went too far
                 token.setKind(Token::Kind::Ampersand);
+                complete = true;
+                break;
+            }
+            }
+            break;
+        }
+        case State::Colon: {
+            switch (c) {
+            case ':': { // ::
+                token.setKind(Token::Kind::ColonColon);
+                pos++;
+                complete = true;
+                break;
+            }
+            default: {
+                // backtrack, went too far
+                token.setKind(Token::Kind::Colon);
                 complete = true;
                 break;
             }
@@ -809,6 +824,10 @@ Token Tokenizer::nextToken() {
         }
         case State::Bang: {
             token.setKind(Token::Kind::Bang);
+            break;
+        }
+        case State::Colon: {
+            token.setKind(Token::Kind::Colon);
             break;
         }
         case State::Dot: {
