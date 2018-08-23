@@ -20,8 +20,8 @@ inline bool isNumeric(const char c) { return c >= '0' && c <= '9'; }
 namespace perun {
 namespace parser {
 
-Tokenizer::Tokenizer(std::unique_ptr<std::string> input, size_t pos)
-    : input(std::move(input)), state(State::Invalid), pos(pos) {}
+Tokenizer::Tokenizer(const std::string& input, size_t pos)
+    : input(input), state(State::Invalid), pos(pos) {}
 
 Token Tokenizer::nextToken() {
     state = State::Start;
@@ -32,9 +32,9 @@ Token Tokenizer::nextToken() {
     // complete is for avoiding goto
     // - indicates when a token is complete so we can stop this loop
     bool complete = false;
-    while (pos < input->size() && !complete) {
+    while (pos < input.size() && !complete) {
         // current char
-        const char c = input->at(pos);
+        const char c = input.at(pos);
 
         switch (state) {
         case State::Start: {
@@ -682,7 +682,7 @@ Token Tokenizer::nextToken() {
 
             // TODO: figure out a way to make a slice / a reference to input
             const std::string& buffer =
-                input->substr(token.start, pos - token.start);
+                input.substr(token.start, pos - token.start);
             const auto keywordKind = getKeyword(buffer);
 
             if (keywordKind != Token::Kind::Invalid) {
@@ -797,7 +797,7 @@ Token Tokenizer::nextToken() {
 
     // if we have reached the end of the input and still haven't finalized a
     // single token:
-    if (pos == input->size() && !complete) {
+    if (pos == input.size() && !complete) {
         // finalize tokens
         switch (state) {
 
@@ -899,7 +899,7 @@ Token Tokenizer::nextToken() {
             // TODO: deduplicate this?
             // TODO: figure out a way to make a slice / a reference to input
             const std::string& buffer =
-                input->substr(token.start, pos - token.start);
+                input.substr(token.start, pos - token.start);
             const auto keywordKind = getKeyword(buffer);
 
             if (keywordKind != Token::Kind::Invalid) {
@@ -934,7 +934,7 @@ Token Tokenizer::nextToken() {
 
 void Tokenizer::dumpToken(const Token& token) const {
     // TODO: this copies for no real reason
-    const std::string source = input->substr(token.start, token.length());
+    const std::string source = input.substr(token.start, token.length());
     std::cerr << getTokenName(token.getKind()) << " \"" << source << "\""
               << std::endl;
 }

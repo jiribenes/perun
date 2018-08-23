@@ -13,7 +13,7 @@ namespace parser {
 class Tokenizer {
 
 public:
-    explicit Tokenizer(std::unique_ptr<std::string> input, size_t pos = 0);
+    explicit Tokenizer(const std::string& input, size_t pos = 0);
 
     /// Returns next found token
     /// Last token will have kind 'Token::Kind::EndOfFile'
@@ -25,7 +25,7 @@ public:
     void dumpToken(const Token& token) const;
 
 private:
-    std::unique_ptr<std::string> input;
+    const std::string& input;
 
     [[noreturn]] void error(const std::string& message);
 
