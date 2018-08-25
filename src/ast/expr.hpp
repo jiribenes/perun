@@ -23,21 +23,27 @@ public:
     explicit LiteralInteger(uint64_t value)
         : Literal(Node::Kind::LiteralInteger), value(value) {}
 
+    uint64_t getValue() const { return value; }
+
 private:
-    uint64_t value;
+    // TODO: use infinite precision integer
+    const uint64_t value;
 };
 
 class LiteralString : public Literal {
 public:
-    LiteralString(std::string&& str, bool isC = false, bool isRaw = false)
-        : Literal(Node::Kind::LiteralString), str(std::move(str)), isC(isC),
-          isRaw(isRaw) {}
+    explicit LiteralString(std::string&& str, bool c = false, bool raw = false)
+        : Literal(Node::Kind::LiteralString), str(std::move(str)), c(c),
+          raw(raw) {}
+
+    bool isC() const { return c; }
+    bool isRaw() const { return raw; }
 
 private:
-    std::string str;
+    const std::string str;
 
-    bool isC;
-    bool isRaw;
+    const bool c;
+    const bool raw;
 };
 
 } // namespace ast

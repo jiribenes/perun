@@ -28,9 +28,10 @@ public:
     };
 
     explicit Node(Kind kind) : kind(kind) {}
+
     virtual ~Node() = default;
 
-    const Kind kind;
+    Kind kind;
 
     bool isStmt() const;
     bool isExpr() const;
@@ -46,7 +47,7 @@ public:
 
 class Root : public Node {
 public:
-    Root(size_t eofToken); // ctor defined in 'node.cpp'
+    explicit Root(size_t eofToken); // ctor defined in 'node.cpp'
 
     void addDecl(std::unique_ptr<Stmt>&& decl);
     void setEOFToken(size_t token) { eofToken = token; }
