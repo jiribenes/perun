@@ -31,8 +31,6 @@ public:
 
     virtual ~Node() = default;
 
-    Kind kind;
-
     bool isStmt() const;
     bool isExpr() const;
 
@@ -43,6 +41,11 @@ public:
     template <typename... Ts> bool isOneOf(Kind k1, Kind k2, Ts... ks) const {
         return is(k1) || isOneOf(k2, ks...);
     }
+
+    Kind getKind() const { return kind; }
+
+private:
+    Kind kind;
 };
 
 class Root : public Node {
