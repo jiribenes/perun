@@ -13,6 +13,15 @@ public:
     explicit Expr(Kind kind) : Node(kind) {}
 };
 
+class Identifier : public Expr {
+public:
+    explicit Identifier(std::string name)
+        : Expr(Node::Kind::Identifier), name(name) {}
+
+private:
+    std::string name;
+};
+
 class Literal : public Expr {
 public:
     explicit Literal(Kind kind) : Expr(kind) {}

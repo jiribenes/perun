@@ -21,6 +21,7 @@ public:
         Block,
 
         // expressions:
+        Identifier,
 
         // literals:
         LiteralInteger,
