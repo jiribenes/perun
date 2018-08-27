@@ -11,6 +11,7 @@ namespace perun {
 // pre-declared as opaque to avoid unnecessary include
 namespace ast {
 class Expr;
+class VarDecl;
 } // namespace ast
 
 namespace parser {
@@ -23,6 +24,7 @@ public:
 
     // parsing functions for nodes
     std::unique_ptr<ast::Expr> parsePrimaryExpr(bool mandatory);
+    std::unique_ptr<ast::VarDecl> parseVarDecl(bool mandatory);
 
 private:
     const std::string& source;
