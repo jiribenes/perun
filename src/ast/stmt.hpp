@@ -9,6 +9,8 @@
 namespace perun {
 namespace ast {
 
+class Expr;
+
 class Stmt : public Node {
 public:
     explicit Stmt(Node::Kind kind) : Node(kind) {}
@@ -36,6 +38,20 @@ private:
     // TODO: use an optional type (?)
     size_t labelToken;
     bool hasLabel;
+};
+
+class VarDecl : public Stmt {
+public:
+    // defined in stmt.cpp
+    VarDecl(bool isConst, std::string name, std::unique_ptr<Expr>&& typeExpr,
+            std::unique_ptr<Expr>&& expr);
+
+private:
+    bool isConst;
+    std::string name;
+    // TODO: change this to allow first-class types
+    std::unique_ptr<ast::Expr> typeExpr; // can be null
+    std::unique_ptr<ast::Expr> expr;     // can be null
 };
 
 } // namespace ast
