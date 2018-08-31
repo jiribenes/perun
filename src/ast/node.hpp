@@ -53,14 +53,18 @@ private:
 
 class Root : public Node {
 public:
-    explicit Root(size_t eofToken); // ctor defined in 'node.cpp'
+    explicit Root(); // ctor defined in 'node.cpp'
 
     void addDecl(std::unique_ptr<Stmt>&& decl);
-    void setEOFToken(size_t token) { eofToken = token; }
+    void setEOFToken(size_t token) {
+        eofToken = token;
+        hasEofToken = true;
+    }
 
 private:
     std::vector<std::unique_ptr<Stmt>> decls;
     size_t eofToken;
+    bool hasEofToken;
 };
 
 } // namespace ast

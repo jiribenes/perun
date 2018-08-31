@@ -5,9 +5,9 @@
 namespace perun {
 namespace ast {
 
-Root::Root(size_t eofToken)
+Root::Root()
     : Node(Node::Kind::Root), decls(std::vector<std::unique_ptr<Stmt>>{}),
-      eofToken(eofToken) {}
+      eofToken(0), hasEofToken(false) {}
 
 void Root::addDecl(std::unique_ptr<Stmt>&& decl) {
     decls.push_back(std::move(decl));
