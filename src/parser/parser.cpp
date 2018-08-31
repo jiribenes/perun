@@ -38,6 +38,39 @@ uint64_t Parser::parseNumber(size_t index) const {
     return std::strtoll(realStr, nullptr, radix);
 }
 
+std::unique_ptr<ast::Root> Parser::parseRoot() {
+    auto root = std::make_unique<ast::Root>();
+
+    while (true) {
+        auto&& decl = parseTopLevelDecl(false);
+        if (decl == nullptr) {
+            break;
+        }
+
+        root->addDecl(std::move(decl));
+    }
+
+    if (consumeToken(Token::Kind::EndOfFile)) {
+        root->setEOFToken(tokenIndex);
+        return root;
+    } else {
+        error("invalid token, expected 'EOF'");
+    }
+}
+
+std::unique_ptr<ast::Stmt> Parser::parseTopLevelDecl(bool mandatory) {
+    auto decl = parseVarDecl(mandatory);
+    if (decl != nullptr) {
+        return decl;
+    }
+
+    if (!mandatory) {
+        return nullptr;
+    }
+
+    error("invalid top level decl");
+}
+
 std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
     if (consumeToken(Token::Kind::LiteralInteger) != nullptr) {
         uint64_t value = parseNumber(tokenIndex);
