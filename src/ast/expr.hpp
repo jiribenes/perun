@@ -55,6 +55,18 @@ private:
     const bool raw;
 };
 
+class LiteralBoolean : public Literal {
+public:
+    explicit LiteralBoolean(bool value)
+        : Literal(Node::Kind::LiteralBoolean), value(value) {}
+
+    bool getValue() const { return value; }
+
+private:
+    // TODO: use infinite precision integer
+    const bool value;
+};
+
 } // namespace ast
 } // namespace perun
 

@@ -27,6 +27,7 @@ public:
         // literals:
         LiteralInteger,
         LiteralString,
+        LiteralBoolean,
     };
 
     explicit Node(Kind kind) : kind(kind) {}
