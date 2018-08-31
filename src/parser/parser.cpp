@@ -47,6 +47,10 @@ std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
         std::string identifier = tokenToString(tokenIndex);
 
         return std::make_unique<ast::Identifier>(identifier);
+    } else if (consumeToken(Token::Kind::KeywordTrue) != nullptr) {
+        return std::make_unique<ast::LiteralBoolean>(true);
+    } else if (consumeToken(Token::Kind::KeywordFalse) != nullptr) {
+        return std::make_unique<ast::LiteralBoolean>(false);
     }
 
     if (mandatory) {
