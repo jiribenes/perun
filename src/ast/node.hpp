@@ -20,6 +20,7 @@ public:
         // statements:
         Block,
         VarDecl,
+        Return,
 
         // expressions:
         Identifier,

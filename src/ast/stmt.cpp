@@ -10,5 +10,9 @@ VarDecl::VarDecl(bool isConst, std::string name,
     : Stmt(Node::Kind::VarDecl), isConst(isConst), name(name),
       typeExpr(std::move(typeExpr)), expr(std::move(expr)) {}
 
+Return::Return(size_t returnToken, std::unique_ptr<ast::Expr>&& expr)
+    : Stmt(Node::Kind::Return), returnToken(returnToken),
+      expr(std::move(expr)) {}
+
 } // namespace ast
 } // namespace perun

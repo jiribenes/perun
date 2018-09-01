@@ -54,6 +54,15 @@ private:
     std::unique_ptr<ast::Expr> expr;     // can be null
 };
 
+class Return : public Stmt {
+public:
+    explicit Return(size_t returnToken, std::unique_ptr<ast::Expr>&& expr);
+
+private:
+    size_t returnToken;
+    std::unique_ptr<ast::Expr> expr; // can be null
+};
+
 } // namespace ast
 } // namespace perun
 
