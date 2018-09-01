@@ -14,6 +14,7 @@ class Root;
 class Stmt;
 class Expr;
 class VarDecl;
+class Return;
 } // namespace ast
 
 namespace parser {
@@ -31,6 +32,7 @@ public:
     std::unique_ptr<ast::Expr> parseExpr(bool mandatory);
     std::unique_ptr<ast::Expr> parsePrimaryExpr(bool mandatory);
 
+    std::unique_ptr<ast::Return> parseReturn(bool mandatory);
     std::unique_ptr<ast::VarDecl> parseVarDecl(bool mandatory);
 
 private:

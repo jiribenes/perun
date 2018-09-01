@@ -106,6 +106,20 @@ std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
     }
 }
 
+std::unique_ptr<ast::Return> Parser::parseReturn(bool mandatory) {
+    size_t returnToken;
+    if (consumeToken(Token::Kind::KeywordReturn) != nullptr) {
+        returnToken = tokenIndex;
+    } else if (!mandatory) {
+        return nullptr;
+    } else {
+        error("expected keyword 'return' while parsing return node");
+    }
+
+    auto expr = parseExpr(false);
+    return std::make_unique<ast::Return>(returnToken, std::move(expr));
+}
+
 std::unique_ptr<ast::VarDecl> Parser::parseVarDecl(bool mandatory) {
     bool isConst;
     if (auto token = consumeToken(Token::Kind::KeywordVar)) {
