@@ -28,7 +28,9 @@ public:
     std::unique_ptr<ast::Root> parseRoot();
     std::unique_ptr<ast::Stmt> parseTopLevelDecl(bool mandatory);
 
+    std::unique_ptr<ast::Expr> parseExpr(bool mandatory);
     std::unique_ptr<ast::Expr> parsePrimaryExpr(bool mandatory);
+
     std::unique_ptr<ast::VarDecl> parseVarDecl(bool mandatory);
 
 private:

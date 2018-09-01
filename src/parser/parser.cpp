@@ -71,6 +71,19 @@ std::unique_ptr<ast::Stmt> Parser::parseTopLevelDecl(bool mandatory) {
     error("invalid top level decl");
 }
 
+std::unique_ptr<ast::Expr> Parser::parseExpr(bool mandatory) {
+    auto primExpr = parsePrimaryExpr(mandatory);
+    if (primExpr != nullptr) {
+        return primExpr;
+    }
+
+    if (!mandatory) {
+        return nullptr;
+    }
+
+    error("invalid expr");
+}
+
 std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
     if (consumeToken(Token::Kind::LiteralInteger) != nullptr) {
         uint64_t value = parseNumber(tokenIndex);
