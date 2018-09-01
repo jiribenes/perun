@@ -15,6 +15,7 @@ class Return;
 
 class Expr;
 class Identifier;
+class GroupedExpr;
 
 class Literal;
 class LiteralInteger;
@@ -35,6 +36,7 @@ public:
 
     void printExpr(const Expr& expr);
     void printIdentifier(const Identifier& id);
+    void printGroupedExpr(const GroupedExpr& grouped);
 
     void printLiteral(const Literal& lit);
     void printLiteralInteger(const LiteralInteger& lit);

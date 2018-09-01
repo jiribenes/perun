@@ -100,6 +100,10 @@ void Printer::printExpr(const Expr& expr) {
         printIdentifier(static_cast<const Identifier&>(expr));
         break;
     }
+    case Node::Kind::GroupedExpr: {
+        printGroupedExpr(static_cast<const GroupedExpr&>(expr));
+        break;
+    }
     case Node::Kind::LiteralInteger:
     case Node::Kind::LiteralString:
     case Node::Kind::LiteralBoolean: {
@@ -114,6 +118,16 @@ void Printer::printExpr(const Expr& expr) {
 }
 
 void Printer::printIdentifier(const Identifier& id) { os << id.getName(); }
+
+void Printer::printGroupedExpr(const GroupedExpr& grouped) {
+    os << '(';
+
+    auto&& inner = grouped.getExpr();
+    assert(inner != nullptr);
+    printExpr(*inner);
+
+    os << ')';
+}
 
 void Printer::printLiteral(const Literal& lit) {
     // TODO: use llvm RTTI

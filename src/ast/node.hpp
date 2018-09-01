@@ -24,6 +24,7 @@ public:
 
         // expressions:
         Identifier,
+        GroupedExpr,
 
         // literals:
         LiteralInteger,

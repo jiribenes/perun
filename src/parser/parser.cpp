@@ -84,6 +84,25 @@ std::unique_ptr<ast::Expr> Parser::parseExpr(bool mandatory) {
     error("invalid expr");
 }
 
+// GroupedExpr := '(' Expr ')'
+std::unique_ptr<ast::GroupedExpr> Parser::parseGroupedExpr(bool mandatory) {
+    if (consumeToken(Token::Kind::LParen) == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected '(' in GroupedExpr");
+    }
+
+    auto&& expr = parseExpr(true);
+
+    if (consumeToken(Token::Kind::RParen) == nullptr) {
+        error("expected ')' in GroupedExpr");
+    }
+
+    return std::make_unique<ast::GroupedExpr>(std::move(expr));
+}
+
 std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
     if (consumeToken(Token::Kind::LiteralInteger) != nullptr) {
         uint64_t value = parseNumber(tokenIndex);
@@ -99,11 +118,15 @@ std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
         return std::make_unique<ast::LiteralBoolean>(false);
     }
 
-    if (mandatory) {
-        error("could not parse primary expr");
-    } else {
+    auto grouped = parseGroupedExpr(false);
+    if (grouped != nullptr) {
+        return grouped;
+    }
+
+    if (!mandatory) {
         return nullptr;
     }
+    error("could not parse primary expr");
 }
 
 std::unique_ptr<ast::Return> Parser::parseReturn(bool mandatory) {

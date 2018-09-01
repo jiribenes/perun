@@ -1,6 +1,7 @@
 #ifndef PERUN_AST_EXPR_HPP
 #define PERUN_AST_EXPR_HPP
 
+#include <cassert>
 #include <string>
 
 #include "node.hpp"
@@ -22,6 +23,18 @@ public:
 
 private:
     std::string name;
+};
+
+class GroupedExpr : public Expr {
+public:
+    explicit GroupedExpr(std::unique_ptr<Expr>&& expr)
+        : Expr(Node::Kind::GroupedExpr), expr(std::move(expr)) {}
+
+    // always non-null
+    const Expr* getExpr() const { return expr.get(); }
+
+private:
+    std::unique_ptr<Expr> expr;
 };
 
 class Literal : public Expr {

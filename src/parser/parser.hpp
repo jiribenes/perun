@@ -13,6 +13,7 @@ namespace ast {
 class Root;
 class Stmt;
 class Expr;
+class GroupedExpr;
 class VarDecl;
 class Return;
 } // namespace ast
@@ -30,6 +31,7 @@ public:
     std::unique_ptr<ast::Stmt> parseTopLevelDecl(bool mandatory);
 
     std::unique_ptr<ast::Expr> parseExpr(bool mandatory);
+    std::unique_ptr<ast::GroupedExpr> parseGroupedExpr(bool mandatory);
     std::unique_ptr<ast::Expr> parsePrimaryExpr(bool mandatory);
 
     std::unique_ptr<ast::Return> parseReturn(bool mandatory);
