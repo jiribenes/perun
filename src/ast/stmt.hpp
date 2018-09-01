@@ -1,7 +1,6 @@
 #ifndef PERUN_AST_STMT_HPP
 #define PERUN_AST_STMT_HPP
 
-#include <experimental/optional>
 #include <string>
 
 #include "node.hpp"
