@@ -18,6 +18,8 @@ public:
     explicit Identifier(std::string name)
         : Expr(Node::Kind::Identifier), name(name) {}
 
+    const std::string& getName() const { return name; }
+
 private:
     std::string name;
 };
@@ -45,6 +47,7 @@ public:
         : Literal(Node::Kind::LiteralString), str(std::move(str)), c(c),
           raw(raw) {}
 
+    const std::string& getValue() const { return str; }
     bool isC() const { return c; }
     bool isRaw() const { return raw; }
 

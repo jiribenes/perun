@@ -62,6 +62,8 @@ public:
         hasEofToken = true;
     }
 
+    const std::vector<std::unique_ptr<Stmt>>& getDecls() const { return decls; }
+
 private:
     std::vector<std::unique_ptr<Stmt>> decls;
     size_t eofToken;

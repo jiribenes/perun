@@ -28,6 +28,8 @@ public:
           rBraceToken(rBraceToken), stmts(std::move(stmts)),
           labelToken(labelToken), hasLabel(true) {}
 
+    const std::vector<std::unique_ptr<Stmt>>& getStmts() const { return stmts; }
+
 private:
     size_t lBraceToken;
     size_t rBraceToken;
@@ -42,11 +44,21 @@ private:
 class VarDecl : public Stmt {
 public:
     // defined in stmt.cpp
-    VarDecl(bool isConst, std::string name, std::unique_ptr<Expr>&& typeExpr,
+    VarDecl(bool constant, std::string name, std::unique_ptr<Expr>&& typeExpr,
             std::unique_ptr<Expr>&& expr);
 
+    bool isConst() const { return constant; }
+    const std::string& getName() const { return name; }
+
+    // can be null
+    const ast::Expr* getType() const { return typeExpr.get(); }
+
+    // can be null
+    const ast::Expr* getExpr() const { return expr.get(); }
+
 private:
-    bool isConst;
+    /// true if the vardecl is const
+    bool constant;
     std::string name;
     // TODO: change this to allow first-class types
     std::unique_ptr<ast::Expr> typeExpr; // can be null
@@ -56,6 +68,9 @@ private:
 class Return : public Stmt {
 public:
     explicit Return(size_t returnToken, std::unique_ptr<ast::Expr>&& expr);
+
+    // can be null
+    const ast::Expr* getExpr() const { return expr.get(); }
 
 private:
     size_t returnToken;
