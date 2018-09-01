@@ -1,5 +1,7 @@
 #include "printer.hpp"
 
+#include <cassert>
+
 #include "expr.hpp"
 #include "node.hpp"
 #include "stmt.hpp"

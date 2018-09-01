@@ -51,30 +51,30 @@ public:
     const std::string& getName() const { return name; }
 
     // can be null
-    const ast::Expr* getType() const { return typeExpr.get(); }
+    const Expr* getType() const { return typeExpr.get(); }
 
     // can be null
-    const ast::Expr* getExpr() const { return expr.get(); }
+    const Expr* getExpr() const { return expr.get(); }
 
 private:
     /// true if the vardecl is const
     bool constant;
     std::string name;
     // TODO: change this to allow first-class types
-    std::unique_ptr<ast::Expr> typeExpr; // can be null
-    std::unique_ptr<ast::Expr> expr;     // can be null
+    std::unique_ptr<Expr> typeExpr; // can be null
+    std::unique_ptr<Expr> expr;     // can be null
 };
 
 class Return : public Stmt {
 public:
-    explicit Return(size_t returnToken, std::unique_ptr<ast::Expr>&& expr);
+    explicit Return(size_t returnToken, std::unique_ptr<Expr>&& expr);
 
     // can be null
-    const ast::Expr* getExpr() const { return expr.get(); }
+    const Expr* getExpr() const { return expr.get(); }
 
 private:
     size_t returnToken;
-    std::unique_ptr<ast::Expr> expr; // can be null
+    std::unique_ptr<Expr> expr; // can be null
 };
 
 } // namespace ast

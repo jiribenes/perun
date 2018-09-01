@@ -1,7 +1,6 @@
 #ifndef PERUN_AST_EXPR_HPP
 #define PERUN_AST_EXPR_HPP
 
-#include <cassert>
 #include <string>
 
 #include "node.hpp"
