@@ -52,7 +52,7 @@ void Printer::printBlock(const Block& block) {
         return;
     }
 
-    os << "{";
+    os << "{\n";
     indent += 4;
     for (auto&& stmt : stmts) {
         printIndent();

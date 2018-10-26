@@ -13,6 +13,7 @@ namespace ast {
 class Root;
 
 class Stmt;
+class Block;
 
 class VarDecl;
 class Return;

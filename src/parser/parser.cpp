@@ -215,6 +215,36 @@ std::unique_ptr<ast::VarDecl> Parser::parseVarDecl(bool mandatory) {
                                           std::move(typeExpr), std::move(expr));
 }
 
+// Block := '{' Stmt* '}'
+std::unique_ptr<ast::Block> Parser::parseBlock(bool mandatory) {
+    std::vector<std::unique_ptr<ast::Stmt>> stmts{};
+
+    auto lBrace = consumeToken(Token::Kind::LBrace);
+    if (lBrace == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected '{' in Block");
+    }
+
+    size_t lBraceIndex = tokenIndex;
+    size_t rBraceIndex = 0;
+    while (true) {
+        auto rBrace = consumeToken(Token::Kind::RBrace);
+        if (rBrace != nullptr) {
+            rBraceIndex = tokenIndex;
+            break;
+        }
+
+        auto stmt = parseStmt(true);
+        stmts.push_back(std::move(stmt));
+    }
+
+    return std::make_unique<ast::Block>(lBraceIndex, rBraceIndex,
+                                        std::move(stmts));
+}
+
 void Parser::fetchToken() {
     Token token = tokenizer.nextToken();
 
