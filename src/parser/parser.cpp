@@ -59,9 +59,9 @@ std::unique_ptr<ast::Root> Parser::parseRoot() {
 }
 
 std::unique_ptr<ast::Stmt> Parser::parseTopLevelDecl(bool mandatory) {
-    auto decl = parseVarDecl(mandatory);
-    if (decl != nullptr) {
-        return decl;
+    auto varDecl = parseVarDecl(false);
+    if (varDecl != nullptr) {
+        return varDecl;
     }
 
     if (!mandatory) {
@@ -72,7 +72,7 @@ std::unique_ptr<ast::Stmt> Parser::parseTopLevelDecl(bool mandatory) {
 }
 
 std::unique_ptr<ast::Expr> Parser::parseExpr(bool mandatory) {
-    auto primExpr = parsePrimaryExpr(mandatory);
+    auto primExpr = parsePrimaryExpr(false);
     if (primExpr != nullptr) {
         return primExpr;
     }
@@ -146,12 +146,12 @@ std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
 
 // Stmt := Return | VarDecl
 std::unique_ptr<ast::Stmt> Parser::parseStmt(bool mandatory) {
-    auto returnStmt = parseReturn(mandatory);
+    auto returnStmt = parseReturn(false);
     if (returnStmt != nullptr) {
         return returnStmt;
     }
 
-    auto varDecl = parseVarDecl(mandatory);
+    auto varDecl = parseVarDecl(false);
     if (varDecl != nullptr) {
         return returnStmt;
     }
