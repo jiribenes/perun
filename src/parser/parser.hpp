@@ -16,6 +16,8 @@ class Stmt;
 class Block;
 
 class VarDecl;
+class ParamDecl;
+class FnDecl;
 class Return;
 
 class Expr;
@@ -43,6 +45,9 @@ public:
     std::unique_ptr<ast::Stmt> parseStmt(bool mandatory);
     std::unique_ptr<ast::Return> parseReturn(bool mandatory);
     std::unique_ptr<ast::VarDecl> parseVarDecl(bool mandatory);
+    std::unique_ptr<ast::ParamDecl> parseParamDecl();
+    std::unique_ptr<ast::FnDecl> parseFnDecl(bool mandatory);
+    std::unique_ptr<ast::Block> parseBlock(bool mandatory);
 
 private:
     const std::string& source;
@@ -75,6 +80,8 @@ private:
 
     std::string tokenToString(size_t index) const;
     uint64_t parseNumber(size_t index) const;
+
+    std::vector<std::unique_ptr<ast::ParamDecl>> parseParamDeclList();
 
     [[noreturn]] void error(const std::string& message);
 };

@@ -20,6 +20,8 @@ public:
         // statements:
         Block,
         VarDecl,
+        ParamDecl,
+        FnDecl,
         Return,
 
         // expressions:

@@ -11,6 +11,8 @@ class Root;
 class Stmt;
 class Block;
 class VarDecl;
+class ParamDecl;
+class FnDecl;
 class Return;
 
 class Expr;
@@ -32,6 +34,8 @@ public:
     void printStmt(const Stmt& stmt);
     void printBlock(const Block& block);
     void printVarDecl(const VarDecl& varDecl);
+    void printParamDecl(const ParamDecl& paramDecl);
+    void printFnDecl(const FnDecl& fnDecl);
     void printReturn(const Return& ret);
 
     void printExpr(const Expr& expr);

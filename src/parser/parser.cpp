@@ -64,6 +64,11 @@ std::unique_ptr<ast::Stmt> Parser::parseTopLevelDecl(bool mandatory) {
         return varDecl;
     }
 
+    auto fnDecl = parseFnDecl(false);
+    if (fnDecl != nullptr) {
+        return fnDecl;
+    }
+
     if (!mandatory) {
         return nullptr;
     }
@@ -213,6 +218,94 @@ std::unique_ptr<ast::VarDecl> Parser::parseVarDecl(bool mandatory) {
 
     return std::make_unique<ast::VarDecl>(isConst, std::move(identifier),
                                           std::move(typeExpr), std::move(expr));
+}
+
+// ParamDecl := (Identifier ':')? Type
+std::unique_ptr<ast::ParamDecl> Parser::parseParamDecl() {
+    auto identifier = parseIdentifier(false);
+    if (identifier != nullptr) {
+        if (consumeToken(Token::Kind::Colon) == nullptr) {
+            error("expected colon");
+        }
+    }
+
+    auto typeExpr = parseExpr(true);
+
+    return std::make_unique<ast::ParamDecl>(std::move(identifier),
+                                            std::move(typeExpr));
+}
+
+// FnDecl := 'pub'? ('inline' | 'extern' | 'export')? 'fn' Identifier?
+//           ParamDeclList ('->' Type)? Block?
+std::unique_ptr<ast::FnDecl> Parser::parseFnDecl(bool mandatory) {
+    bool pub = false;
+    if (consumeToken(Token::Kind::KeywordPub)) {
+        pub = true;
+    }
+
+    bool _extern = false;
+    bool _export = false;
+    if (consumeToken(Token::Kind::KeywordExtern)) {
+        _extern = true;
+    } else if (consumeToken(Token::Kind::KeywordExport)) {
+        _export = true;
+    }
+
+    if (!consumeToken(Token::Kind::KeywordFn)) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("unexpected token - expected 'fn' keyword");
+    }
+
+    auto identifier = parseIdentifier(true);
+
+    auto params = parseParamDeclList();
+
+    std::unique_ptr<ast::Expr> returnType = nullptr;
+    if (consumeToken(Token::Kind::MinusGreater)) {
+        returnType = parseExpr(true);
+    }
+
+    auto body = parseBlock(false);
+
+    if (body == nullptr) { // empty body
+        if (!consumeToken(Token::Kind::Semicolon)) {
+            error("expected semicolon");
+        }
+    }
+
+    return std::make_unique<ast::FnDecl>(
+        std::move(identifier), std::move(params), std::move(returnType),
+        std::move(body), pub, _extern, _export);
+}
+
+// ParamDeclList := '(' list(ParamDecl, ',') ')'
+std::vector<std::unique_ptr<ast::ParamDecl>> Parser::parseParamDeclList() {
+    std::vector<std::unique_ptr<ast::ParamDecl>> params{};
+
+    if (!consumeToken(Token::Kind::LParen)) {
+        error("expected '('");
+    }
+
+    bool expectBreak = false;
+    while (true) {
+        if (consumeToken(Token::Kind::RParen)) {
+            break;
+        } else if (expectBreak) {
+            error("expected '}' after no comma found previously in list");
+        }
+
+        auto param = parseParamDecl();
+        params.push_back(std::move(param));
+
+        if (!consumeToken(Token::Kind::Comma)) {
+            expectBreak = true;
+        }
+    }
+
+    return params;
 }
 
 // Block := '{' Stmt* '}'

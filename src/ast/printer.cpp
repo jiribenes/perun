@@ -34,6 +34,14 @@ void Printer::printStmt(const Stmt& stmt) {
         printVarDecl(static_cast<const VarDecl&>(stmt));
         break;
     }
+    case Node::Kind::ParamDecl: {
+        printParamDecl(static_cast<const ParamDecl&>(stmt));
+        break;
+    }
+    case Node::Kind::FnDecl: {
+        printFnDecl(static_cast<const FnDecl&>(stmt));
+        break;
+    }
     case Node::Kind::Return: {
         printReturn(static_cast<const Return&>(stmt));
         break;
@@ -81,6 +89,67 @@ void Printer::printVarDecl(const VarDecl& varDecl) {
     }
 
     os << ";";
+}
+
+void Printer::printParamDecl(const ParamDecl& paramDecl) {
+    auto&& identifier = paramDecl.getIdentifier();
+    if (identifier != nullptr) {
+        printIdentifier(*identifier);
+        os << ": ";
+    }
+
+    auto&& typeExpr = paramDecl.getType();
+    printExpr(*typeExpr);
+}
+
+void Printer::printFnDecl(const FnDecl& fnDecl) {
+    if (fnDecl.isPub()) {
+        os << "pub ";
+    }
+
+    if (fnDecl.isExtern()) {
+        os << "extern ";
+    } else if (fnDecl.isExport()) {
+        os << "export ";
+    }
+
+    os << "fn ";
+
+    auto&& identifier = fnDecl.getIdentifier();
+    if (identifier != nullptr) {
+        printIdentifier(*identifier);
+    }
+
+    { // params
+        os << "(";
+
+        size_t paramsSize = fnDecl.getParams().size();
+        for (size_t i = 0; i < paramsSize; ++i) {
+            auto&& param = fnDecl.getParam(i);
+            printParamDecl(*param);
+
+            if (i + 1 < paramsSize) {
+                os << ", ";
+            }
+        }
+
+        os << ")";
+    }
+
+    auto&& returnType = fnDecl.getReturnType();
+    if (returnType != nullptr) {
+        os << " -> ";
+        printExpr(*returnType);
+    }
+
+    os << " ";
+
+    auto&& body = fnDecl.getBody();
+    if (body != nullptr) {
+        printBlock(*body);
+    } else {
+        os << ";\n";
+    }
 }
 
 void Printer::printReturn(const Return& ret) {
