@@ -11,11 +11,15 @@ namespace perun {
 // pre-declared as opaque to avoid unnecessary include
 namespace ast {
 class Root;
+
 class Stmt;
-class Expr;
-class GroupedExpr;
+
 class VarDecl;
 class Return;
+
+class Expr;
+class GroupedExpr;
+class Identifier;
 } // namespace ast
 
 namespace parser {
@@ -32,8 +36,10 @@ public:
 
     std::unique_ptr<ast::Expr> parseExpr(bool mandatory);
     std::unique_ptr<ast::GroupedExpr> parseGroupedExpr(bool mandatory);
+    std::unique_ptr<ast::Identifier> parseIdentifier(bool mandatory);
     std::unique_ptr<ast::Expr> parsePrimaryExpr(bool mandatory);
 
+    std::unique_ptr<ast::Stmt> parseStmt(bool mandatory);
     std::unique_ptr<ast::Return> parseReturn(bool mandatory);
     std::unique_ptr<ast::VarDecl> parseVarDecl(bool mandatory);
 
@@ -58,8 +64,8 @@ private:
     /// tries to consume a token of given kind, returns nullptr on fail
     const Token* consumeToken(Token::Kind kind);
 
-    /// tries to consume a token which is one of given kinds, returns nullptr on
-    /// fail
+    /// tries to consume a token which is one of given kinds,
+    /// returns nullptr on fail
     template <typename... Ts> const Token* consumeOneOf(Ts... kinds);
 
     /// Warning: this reference is only valid

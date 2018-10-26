@@ -66,7 +66,7 @@ void Printer::printBlock(const Block& block) {
 
 void Printer::printVarDecl(const VarDecl& varDecl) {
     auto&& mutabilityStr = varDecl.isConst() ? "const" : "var";
-    os << mutabilityStr << ' ' << varDecl.getName();
+    os << mutabilityStr << ' ' << varDecl.getIdentifier()->getName();
 
     auto&& type = varDecl.getType();
     if (type != nullptr) {

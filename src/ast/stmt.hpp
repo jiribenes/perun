@@ -9,6 +9,7 @@ namespace perun {
 namespace ast {
 
 class Expr;
+class Identifier;
 
 class Stmt : public Node {
 public:
@@ -30,6 +31,10 @@ public:
 
     const std::vector<std::unique_ptr<Stmt>>& getStmts() const { return stmts; }
 
+    void addStmt(std::unique_ptr<Stmt>&& stmt) {
+        stmts.push_back(std::move(stmt));
+    }
+
 private:
     size_t lBraceToken;
     size_t rBraceToken;
@@ -44,11 +49,12 @@ private:
 class VarDecl : public Stmt {
 public:
     // defined in stmt.cpp
-    VarDecl(bool constant, std::string name, std::unique_ptr<Expr>&& typeExpr,
-            std::unique_ptr<Expr>&& expr);
+    VarDecl(bool constant, std::unique_ptr<Identifier>&& identifier,
+            std::unique_ptr<Expr>&& typeExpr, std::unique_ptr<Expr>&& expr);
 
     bool isConst() const { return constant; }
-    const std::string& getName() const { return name; }
+
+    const Identifier* getIdentifier() const { return identifier.get(); }
 
     // can be null
     const Expr* getType() const { return typeExpr.get(); }
@@ -59,7 +65,7 @@ public:
 private:
     /// true if the vardecl is const
     bool constant;
-    std::string name;
+    std::unique_ptr<Identifier> identifier;
     // TODO: change this to allow first-class types
     std::unique_ptr<Expr> typeExpr; // can be null
     std::unique_ptr<Expr> expr;     // can be null

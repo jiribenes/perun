@@ -103,15 +103,25 @@ std::unique_ptr<ast::GroupedExpr> Parser::parseGroupedExpr(bool mandatory) {
     return std::make_unique<ast::GroupedExpr>(std::move(expr));
 }
 
+std::unique_ptr<ast::Identifier> Parser::parseIdentifier(bool mandatory) {
+    if (consumeToken(Token::Kind::Identifier) != nullptr) {
+        std::string identifier = tokenToString(tokenIndex);
+
+        return std::make_unique<ast::Identifier>(identifier);
+    }
+
+    if (!mandatory) {
+        return nullptr;
+    }
+
+    error("could not parse identifier");
+}
+
 std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
     if (consumeToken(Token::Kind::LiteralInteger) != nullptr) {
         uint64_t value = parseNumber(tokenIndex);
 
         return std::make_unique<ast::LiteralInteger>(value);
-    } else if (consumeToken(Token::Kind::Identifier) != nullptr) {
-        std::string identifier = tokenToString(tokenIndex);
-
-        return std::make_unique<ast::Identifier>(identifier);
     } else if (consumeToken(Token::Kind::KeywordTrue) != nullptr) {
         return std::make_unique<ast::LiteralBoolean>(true);
     } else if (consumeToken(Token::Kind::KeywordFalse) != nullptr) {
@@ -123,10 +133,34 @@ std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
         return grouped;
     }
 
+    auto identifier = parseIdentifier(false);
+    if (identifier != nullptr) {
+        return identifier;
+    }
+
     if (!mandatory) {
         return nullptr;
     }
     error("could not parse primary expr");
+}
+
+// Stmt := Return | VarDecl
+std::unique_ptr<ast::Stmt> Parser::parseStmt(bool mandatory) {
+    auto returnStmt = parseReturn(mandatory);
+    if (returnStmt != nullptr) {
+        return returnStmt;
+    }
+
+    auto varDecl = parseVarDecl(mandatory);
+    if (varDecl != nullptr) {
+        return returnStmt;
+    }
+
+    if (!mandatory) {
+        return nullptr;
+    }
+
+    error("invalid stmt");
 }
 
 std::unique_ptr<ast::Return> Parser::parseReturn(bool mandatory) {
@@ -140,9 +174,15 @@ std::unique_ptr<ast::Return> Parser::parseReturn(bool mandatory) {
     }
 
     auto expr = parseExpr(false);
+
+    if (consumeToken(Token::Kind::Semicolon) == nullptr) {
+        error("expected semicolon");
+    }
+
     return std::make_unique<ast::Return>(returnToken, std::move(expr));
 }
 
+// VarDecl := ('var' | 'const') Identifier (: Type)? '=' Expr
 std::unique_ptr<ast::VarDecl> Parser::parseVarDecl(bool mandatory) {
     bool isConst;
     if (auto token = consumeToken(Token::Kind::KeywordVar)) {
@@ -155,35 +195,24 @@ std::unique_ptr<ast::VarDecl> Parser::parseVarDecl(bool mandatory) {
         return nullptr;
     }
 
-    std::string name;
-    if (consumeToken(Token::Kind::Identifier)) {
-        name = tokenToString(tokenIndex);
-    } else {
-        error("unexpected token - expected 'Identifier' as name");
-    }
+    auto identifier = parseIdentifier(true);
 
     std::unique_ptr<ast::Expr> typeExpr = nullptr;
     if (consumeToken(Token::Kind::Colon)) {
-        if (consumeToken(Token::Kind::Identifier)) {
-            std::string identifier = tokenToString(tokenIndex);
-
-            typeExpr = std::make_unique<ast::Identifier>(identifier);
-        } else {
-            error("unexpected token - expected 'Identifier' as type");
-        }
+        typeExpr = parseExpr(true);
     }
 
     std::unique_ptr<ast::Expr> expr = nullptr;
     if (consumeToken(Token::Kind::Eq)) {
-        expr = parsePrimaryExpr(true);
+        expr = parseExpr(true);
     }
 
     if (!consumeToken(Token::Kind::Semicolon)) {
         error("expected semicolon");
     }
 
-    return std::make_unique<ast::VarDecl>(isConst, name, std::move(typeExpr),
-                                          std::move(expr));
+    return std::make_unique<ast::VarDecl>(isConst, std::move(identifier),
+                                          std::move(typeExpr), std::move(expr));
 }
 
 void Parser::fetchToken() {

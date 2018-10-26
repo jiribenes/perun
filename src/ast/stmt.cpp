@@ -5,10 +5,11 @@
 namespace perun {
 namespace ast {
 
-VarDecl::VarDecl(bool constant, std::string name,
+VarDecl::VarDecl(bool constant, std::unique_ptr<Identifier>&& identifier,
                  std::unique_ptr<Expr>&& typeExpr, std::unique_ptr<Expr>&& expr)
-    : Stmt(Node::Kind::VarDecl), constant(constant), name(name),
-      typeExpr(std::move(typeExpr)), expr(std::move(expr)) {}
+    : Stmt(Node::Kind::VarDecl), constant(constant),
+      identifier(std::move(identifier)), typeExpr(std::move(typeExpr)),
+      expr(std::move(expr)) {}
 
 Return::Return(size_t returnToken, std::unique_ptr<Expr>&& expr)
     : Stmt(Node::Kind::Return), returnToken(returnToken),

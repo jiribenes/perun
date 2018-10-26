@@ -126,8 +126,6 @@ struct Token {
 
     Token(Kind kind, size_t start) : start(start), kind(kind) {}
 
-    const char* kindString() const;
-
     Kind getKind() const { return kind; }
     void setKind(Kind k) { kind = k; }
 
