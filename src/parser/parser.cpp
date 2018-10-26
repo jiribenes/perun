@@ -153,7 +153,7 @@ std::unique_ptr<ast::Stmt> Parser::parseStmt(bool mandatory) {
 
     auto varDecl = parseVarDecl(false);
     if (varDecl != nullptr) {
-        return returnStmt;
+        return varDecl;
     }
 
     if (!mandatory) {
