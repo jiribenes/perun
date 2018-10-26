@@ -142,10 +142,9 @@ void Printer::printFnDecl(const FnDecl& fnDecl) {
         printExpr(*returnType);
     }
 
-    os << " ";
-
     auto&& body = fnDecl.getBody();
     if (body != nullptr) {
+        os << " ";
         printBlock(*body);
     } else {
         os << ";\n";
