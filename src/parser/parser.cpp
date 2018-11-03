@@ -158,8 +158,7 @@ std::unique_ptr<ast::ParamDecl> Parser::parseParamDecl() {
                                             std::move(typeExpr));
 }
 
-// ParamDeclList := '(' list(ParamDecl, ',') ')'
-//  <same as>    := '(' (ParamDecl ',')* (ParamDecl ','?)? ')'
+// ParamDeclList := '(' (ParamDecl ',')* ParamDecl? ')'
 std::vector<std::unique_ptr<ast::ParamDecl>> Parser::parseParamDeclList() {
     std::vector<std::unique_ptr<ast::ParamDecl>> params{};
 
