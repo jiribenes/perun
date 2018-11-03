@@ -1,6 +1,7 @@
 #ifndef PERUN_AST_NODE_HPP
 #define PERUN_AST_NODE_HPP
 
+#include <cassert>
 #include <cstdlib>
 #include <memory>
 #include <vector>
@@ -55,6 +56,9 @@ public:
 
     Kind getKind() const { return kind; }
 
+    virtual size_t firstTokenIndex() const = 0;
+    virtual size_t lastTokenIndex() const = 0;
+
 private:
     Kind kind;
 };
@@ -70,6 +74,9 @@ public:
     }
 
     const std::vector<std::unique_ptr<Stmt>>& getDecls() const { return decls; }
+
+    size_t firstTokenIndex() const override;
+    size_t lastTokenIndex() const override;
 
 private:
     std::vector<std::unique_ptr<Stmt>> decls;

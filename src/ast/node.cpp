@@ -53,5 +53,19 @@ void Root::addDecl(std::unique_ptr<Stmt>&& decl) {
     decls.push_back(std::move(decl));
 }
 
+size_t Root::firstTokenIndex() const {
+    if (!decls.empty()) {
+        return decls[0]->firstTokenIndex();
+    }
+
+    assert(hasEofToken);
+    return eofToken;
+}
+
+size_t Root::lastTokenIndex() const {
+    assert(hasEofToken);
+    return eofToken;
+}
+
 } // namespace ast
 } // namespace perun

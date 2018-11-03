@@ -270,9 +270,7 @@ void Printer::printLiteralBoolean(const LiteralBoolean& lit) {
     os << boolStr;
 }
 
-void Printer::printLiteralNil(const LiteralNil& lit) {
-    os << "nil";
-}
+void Printer::printLiteralNil(const LiteralNil& lit) { os << "nil"; }
 
 void Printer::printLiteralUndefined(const LiteralUndefined& lit) {
     os << "undefined";

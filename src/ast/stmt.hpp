@@ -17,6 +17,9 @@ public:
     explicit Stmt(Node::Kind kind) : Node(kind) {}
 
     virtual ~Stmt() = default;
+
+    virtual size_t firstTokenIndex() const = 0;
+    virtual size_t lastTokenIndex() const = 0;
 };
 
 class Block : public Stmt {
@@ -38,6 +41,9 @@ public:
         stmts.push_back(std::move(stmt));
     }
 
+    size_t firstTokenIndex() const override { return lBraceToken; }
+    size_t lastTokenIndex() const override { return rBraceToken; }
+
 private:
     size_t lBraceToken;
     size_t rBraceToken;
@@ -53,7 +59,8 @@ class VarDecl : public Stmt {
 public:
     // defined in stmt.cpp
     VarDecl(bool constant, std::unique_ptr<Identifier>&& identifier,
-            std::unique_ptr<Expr>&& typeExpr, std::unique_ptr<Expr>&& expr);
+            std::unique_ptr<Expr>&& typeExpr, std::unique_ptr<Expr>&& expr,
+            size_t varToken, size_t semicolonToken);
 
     bool isConst() const { return constant; }
 
@@ -65,6 +72,9 @@ public:
     // can be null
     const Expr* getExpr() const { return expr.get(); }
 
+    size_t firstTokenIndex() const override { return varToken; }
+    size_t lastTokenIndex() const override { return semicolonToken; }
+
 private:
     /// true if the vardecl is const
     bool constant;
@@ -72,6 +82,9 @@ private:
     // TODO: change this to allow first-class types
     std::unique_ptr<Expr> typeExpr; // can be null
     std::unique_ptr<Expr> expr;     // can be null
+
+    size_t varToken;
+    size_t semicolonToken;
 };
 
 class ParamDecl : public Stmt {
@@ -81,6 +94,9 @@ public:
 
     const Identifier* getIdentifier() const { return identifier.get(); }
     const Expr* getType() const { return type.get(); }
+
+    size_t firstTokenIndex() const override;
+    size_t lastTokenIndex() const override;
 
 private:
     std::unique_ptr<Identifier> identifier; // can be null
@@ -92,7 +108,8 @@ public:
     FnDecl(std::unique_ptr<Identifier>&& identifier,
            std::vector<std::unique_ptr<ParamDecl>>&& params,
            std::unique_ptr<Expr>&& returnType, std::unique_ptr<Block>&& body,
-           bool pub = false, bool _extern = false, bool _export = false);
+           bool pub, bool _extern, bool _export, size_t fnToken,
+           size_t pubToken, size_t modifierToken, size_t semicolonToken);
 
     const Identifier* getIdentifier() const { return identifier.get(); }
 
@@ -115,6 +132,9 @@ public:
     bool isExtern() const { return _extern; }
     bool isExport() const { return _export; }
 
+    size_t firstTokenIndex() const override;
+    size_t lastTokenIndex() const override;
+
 private:
     std::unique_ptr<Identifier> identifier; // can be null
 
@@ -129,25 +149,34 @@ private:
     // only one of the following can be active at a time
     bool _extern;
     bool _export;
+
+    // all the ones that don't exist are set to 0
+    size_t fnToken, pubToken, modifierToken, semicolonToken;
 };
 
 class Return : public Stmt {
 public:
-    explicit Return(size_t returnToken, std::unique_ptr<Expr>&& expr);
+    explicit Return(std::unique_ptr<Expr>&& expr, size_t returnToken,
+                    size_t semicolonToken);
 
     // can be null
     const Expr* getExpr() const { return expr.get(); }
 
+    size_t firstTokenIndex() const override { return returnToken; }
+    size_t lastTokenIndex() const override { return semicolonToken; }
+
 private:
-    size_t returnToken;
     std::unique_ptr<Expr> expr; // can be null
+
+    size_t returnToken, semicolonToken;
 };
 
 class IfStmt : public Stmt {
 public:
     explicit IfStmt(std::unique_ptr<Expr>&& condition,
                     std::unique_ptr<Block>&& then,
-                    std::unique_ptr<Block>&& otherwise);
+                    std::unique_ptr<Block>&& otherwise, size_t ifToken,
+                    size_t elseToken);
 
     const Expr* getCondition() const { return condition.get(); }
     const Block* getThenBlock() const { return then.get(); }
@@ -155,10 +184,20 @@ public:
     // can be null
     const Block* getElseBlock() const { return otherwise.get(); }
 
+    size_t firstTokenIndex() const override { return ifToken; }
+    size_t lastTokenIndex() const override {
+        if (otherwise != nullptr) {
+            return otherwise->lastTokenIndex();
+        }
+        return then->lastTokenIndex();
+    }
+
 private:
     std::unique_ptr<Expr> condition;
     std::unique_ptr<Block> then;
     std::unique_ptr<Block> otherwise; // can be null
+
+    size_t ifToken, elseToken;
 };
 
 } // namespace ast
