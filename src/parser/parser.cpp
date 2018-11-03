@@ -9,35 +9,7 @@
 namespace perun {
 namespace parser {
 
-std::string Parser::tokenToString(size_t index) const {
-    assert(index < tokens.size() &&
-           "cannot convert unbuffered token into string");
-
-    const Token& token = tokens[index];
-    return source.substr(token.start, token.length());
-}
-
-uint64_t Parser::parseNumber(size_t index) const {
-    const std::string str = tokenToString(index);
-
-    // TODO: error handling
-    int radix = 10;
-    if (str[0] == '0' && str.size() >= 3) {
-        if (str[1] == 'b') {
-            radix = 2;
-        } else if (str[1] == 'o') {
-            radix = 8;
-        } else if (str[1] == 'x') {
-            radix = 16;
-        }
-    }
-
-    // TODO: this is an ugly hack - could we make it better?
-    const char* realStr = radix != 10 ? (str.c_str() + 2) : str.c_str();
-
-    return std::strtoll(realStr, nullptr, radix);
-}
-
+// Root := TLD* EOF
 std::unique_ptr<ast::Root> Parser::parseRoot() {
     auto root = std::make_unique<ast::Root>();
 
@@ -58,6 +30,7 @@ std::unique_ptr<ast::Root> Parser::parseRoot() {
     }
 }
 
+// TLD := VarDecl | FnDecl
 std::unique_ptr<ast::Stmt> Parser::parseTopLevelDecl(bool mandatory) {
     auto varDecl = parseVarDecl(false);
     if (varDecl != nullptr) {
@@ -76,83 +49,7 @@ std::unique_ptr<ast::Stmt> Parser::parseTopLevelDecl(bool mandatory) {
     error("invalid top level decl");
 }
 
-std::unique_ptr<ast::Expr> Parser::parseExpr(bool mandatory) {
-    auto primExpr = parsePrimaryExpr(false);
-    if (primExpr != nullptr) {
-        return primExpr;
-    }
-
-    if (!mandatory) {
-        return nullptr;
-    }
-
-    error("invalid expr");
-}
-
-// GroupedExpr := '(' Expr ')'
-std::unique_ptr<ast::GroupedExpr> Parser::parseGroupedExpr(bool mandatory) {
-    if (consumeToken(Token::Kind::LParen) == nullptr) {
-        if (!mandatory) {
-            return nullptr;
-        }
-
-        error("expected '(' in GroupedExpr");
-    }
-
-    auto&& expr = parseExpr(true);
-
-    if (consumeToken(Token::Kind::RParen) == nullptr) {
-        error("expected ')' in GroupedExpr");
-    }
-
-    return std::make_unique<ast::GroupedExpr>(std::move(expr));
-}
-
-std::unique_ptr<ast::Identifier> Parser::parseIdentifier(bool mandatory) {
-    if (consumeToken(Token::Kind::Identifier) != nullptr) {
-        std::string identifier = tokenToString(tokenIndex);
-
-        return std::make_unique<ast::Identifier>(identifier);
-    }
-
-    if (!mandatory) {
-        return nullptr;
-    }
-
-    error("could not parse identifier");
-}
-
-std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
-    if (consumeToken(Token::Kind::LiteralInteger) != nullptr) {
-        uint64_t value = parseNumber(tokenIndex);
-
-        return std::make_unique<ast::LiteralInteger>(value);
-    } else if (consumeToken(Token::Kind::KeywordTrue) != nullptr) {
-        return std::make_unique<ast::LiteralBoolean>(true);
-    } else if (consumeToken(Token::Kind::KeywordFalse) != nullptr) {
-        return std::make_unique<ast::LiteralBoolean>(false);
-    } else if (consumeToken(Token::Kind::KeywordNil) != nullptr) {
-        return std::make_unique<ast::Literal>(ast::Node::Kind::LiteralNil);
-    } else if (consumeToken(Token::Kind::KeywordUndefined) != nullptr) {
-        return std::make_unique<ast::Literal>(
-            ast::Node::Kind::LiteralUndefined);
-    }
-
-    auto grouped = parseGroupedExpr(false);
-    if (grouped != nullptr) {
-        return grouped;
-    }
-
-    auto identifier = parseIdentifier(false);
-    if (identifier != nullptr) {
-        return identifier;
-    }
-
-    if (!mandatory) {
-        return nullptr;
-    }
-    error("could not parse primary expr");
-}
+// statements:
 
 // Stmt := Return | VarDecl
 std::unique_ptr<ast::Stmt> Parser::parseStmt(bool mandatory) {
@@ -173,26 +70,37 @@ std::unique_ptr<ast::Stmt> Parser::parseStmt(bool mandatory) {
     error("invalid stmt");
 }
 
-std::unique_ptr<ast::Return> Parser::parseReturn(bool mandatory) {
-    size_t returnToken;
-    if (consumeToken(Token::Kind::KeywordReturn) != nullptr) {
-        returnToken = tokenIndex;
-    } else if (!mandatory) {
-        return nullptr;
-    } else {
-        error("expected keyword 'return' while parsing return node");
+// Block := '{' Stmt* '}'
+std::unique_ptr<ast::Block> Parser::parseBlock(bool mandatory) {
+    std::vector<std::unique_ptr<ast::Stmt>> stmts{};
+
+    auto lBrace = consumeToken(Token::Kind::LBrace);
+    if (lBrace == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected '{' in Block");
     }
 
-    auto expr = parseExpr(false);
+    size_t lBraceIndex = tokenIndex;
+    size_t rBraceIndex = 0;
+    while (true) {
+        auto rBrace = consumeToken(Token::Kind::RBrace);
+        if (rBrace != nullptr) {
+            rBraceIndex = tokenIndex;
+            break;
+        }
 
-    if (consumeToken(Token::Kind::Semicolon) == nullptr) {
-        error("expected semicolon");
+        auto stmt = parseStmt(true);
+        stmts.push_back(std::move(stmt));
     }
 
-    return std::make_unique<ast::Return>(returnToken, std::move(expr));
+    return std::make_unique<ast::Block>(lBraceIndex, rBraceIndex,
+                                        std::move(stmts));
 }
 
-// VarDecl := ('var' | 'const') Identifier (: Type)? '=' Expr
+// VarDecl := ('var' | 'const') Identifier (: Type)? '=' Expr ';'
 std::unique_ptr<ast::VarDecl> Parser::parseVarDecl(bool mandatory) {
     bool isConst;
     if (auto token = consumeToken(Token::Kind::KeywordVar)) {
@@ -240,7 +148,35 @@ std::unique_ptr<ast::ParamDecl> Parser::parseParamDecl() {
                                             std::move(typeExpr));
 }
 
-// FnDecl := 'pub'? ('inline' | 'extern' | 'export')? 'fn' Identifier?
+// ParamDeclList := '(' list(ParamDecl, ',') ')'
+//  <same as>    := '(' (ParamDecl ',')* (ParamDecl ','?)? ')'
+std::vector<std::unique_ptr<ast::ParamDecl>> Parser::parseParamDeclList() {
+    std::vector<std::unique_ptr<ast::ParamDecl>> params{};
+
+    if (!consumeToken(Token::Kind::LParen)) {
+        error("expected '('");
+    }
+
+    bool expectBreak = false;
+    while (true) {
+        if (consumeToken(Token::Kind::RParen)) {
+            break;
+        } else if (expectBreak) {
+            error("expected '}' after no comma found previously in list");
+        }
+
+        auto param = parseParamDecl();
+        params.push_back(std::move(param));
+
+        if (!consumeToken(Token::Kind::Comma)) {
+            expectBreak = true;
+        }
+    }
+
+    return params;
+}
+
+// FnDecl := 'pub'? ('extern' | 'export')? 'fn' Identifier?
 //           ParamDeclList ('->' Type)? Block?
 std::unique_ptr<ast::FnDecl> Parser::parseFnDecl(bool mandatory) {
     bool pub = false;
@@ -286,61 +222,107 @@ std::unique_ptr<ast::FnDecl> Parser::parseFnDecl(bool mandatory) {
         std::move(body), pub, _extern, _export);
 }
 
-// ParamDeclList := '(' list(ParamDecl, ',') ')'
-std::vector<std::unique_ptr<ast::ParamDecl>> Parser::parseParamDeclList() {
-    std::vector<std::unique_ptr<ast::ParamDecl>> params{};
-
-    if (!consumeToken(Token::Kind::LParen)) {
-        error("expected '('");
+// Return := 'return' Expr ';'
+std::unique_ptr<ast::Return> Parser::parseReturn(bool mandatory) {
+    size_t returnToken;
+    if (consumeToken(Token::Kind::KeywordReturn) != nullptr) {
+        returnToken = tokenIndex;
+    } else if (!mandatory) {
+        return nullptr;
+    } else {
+        error("expected keyword 'return' while parsing return node");
     }
 
-    bool expectBreak = false;
-    while (true) {
-        if (consumeToken(Token::Kind::RParen)) {
-            break;
-        } else if (expectBreak) {
-            error("expected '}' after no comma found previously in list");
-        }
+    auto expr = parseExpr(false);
 
-        auto param = parseParamDecl();
-        params.push_back(std::move(param));
-
-        if (!consumeToken(Token::Kind::Comma)) {
-            expectBreak = true;
-        }
+    if (consumeToken(Token::Kind::Semicolon) == nullptr) {
+        error("expected semicolon");
     }
 
-    return params;
+    return std::make_unique<ast::Return>(returnToken, std::move(expr));
 }
 
-// Block := '{' Stmt* '}'
-std::unique_ptr<ast::Block> Parser::parseBlock(bool mandatory) {
-    std::vector<std::unique_ptr<ast::Stmt>> stmts{};
+// expressions:
 
-    auto lBrace = consumeToken(Token::Kind::LBrace);
-    if (lBrace == nullptr) {
+// Expr := PrimaryExpr
+std::unique_ptr<ast::Expr> Parser::parseExpr(bool mandatory) {
+    auto primExpr = parsePrimaryExpr(false);
+    if (primExpr != nullptr) {
+        return primExpr;
+    }
+
+    if (!mandatory) {
+        return nullptr;
+    }
+
+    error("invalid expr");
+}
+
+// GroupedExpr := '(' Expr ')'
+std::unique_ptr<ast::GroupedExpr> Parser::parseGroupedExpr(bool mandatory) {
+    if (consumeToken(Token::Kind::LParen) == nullptr) {
         if (!mandatory) {
             return nullptr;
         }
 
-        error("expected '{' in Block");
+        error("expected '(' in GroupedExpr");
     }
 
-    size_t lBraceIndex = tokenIndex;
-    size_t rBraceIndex = 0;
-    while (true) {
-        auto rBrace = consumeToken(Token::Kind::RBrace);
-        if (rBrace != nullptr) {
-            rBraceIndex = tokenIndex;
-            break;
-        }
+    auto&& expr = parseExpr(true);
 
-        auto stmt = parseStmt(true);
-        stmts.push_back(std::move(stmt));
+    if (consumeToken(Token::Kind::RParen) == nullptr) {
+        error("expected ')' in GroupedExpr");
     }
 
-    return std::make_unique<ast::Block>(lBraceIndex, rBraceIndex,
-                                        std::move(stmts));
+    return std::make_unique<ast::GroupedExpr>(std::move(expr));
+}
+
+std::unique_ptr<ast::Identifier> Parser::parseIdentifier(bool mandatory) {
+    if (consumeToken(Token::Kind::Identifier) != nullptr) {
+        std::string identifier = tokenToString(tokenIndex);
+
+        return std::make_unique<ast::Identifier>(identifier);
+    }
+
+    if (!mandatory) {
+        return nullptr;
+    }
+
+    error("could not parse identifier");
+}
+
+// PrimaryExpr := Integer | 'true' | 'false' | 'nil' | 'undefined'
+//              | GroupedExpr | Identifier
+std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
+    if (consumeToken(Token::Kind::LiteralInteger) != nullptr) {
+        uint64_t value = parseNumber(tokenIndex);
+
+        return std::make_unique<ast::LiteralInteger>(value);
+    } else if (consumeToken(Token::Kind::KeywordTrue) != nullptr) {
+        return std::make_unique<ast::LiteralBoolean>(true);
+    } else if (consumeToken(Token::Kind::KeywordFalse) != nullptr) {
+        return std::make_unique<ast::LiteralBoolean>(false);
+    } else if (consumeToken(Token::Kind::KeywordNil) != nullptr) {
+        return std::make_unique<ast::Literal>(ast::Node::Kind::LiteralNil);
+    } else if (consumeToken(Token::Kind::KeywordUndefined) != nullptr) {
+        return std::make_unique<ast::Literal>(
+            ast::Node::Kind::LiteralUndefined);
+    }
+
+    auto grouped = parseGroupedExpr(false);
+    if (grouped != nullptr) {
+        return grouped;
+    }
+
+    auto identifier = parseIdentifier(false);
+    if (identifier != nullptr) {
+        return identifier;
+    }
+
+    if (!mandatory) {
+        return nullptr;
+    }
+    error("could not parse primary expr");
 }
 
 void Parser::fetchToken() {
@@ -418,6 +400,36 @@ template <typename... Ts> const Token* Parser::consumeOneOf(Ts... kinds) {
     }
 
     return nullptr;
+}
+
+// helper functions
+std::string Parser::tokenToString(size_t index) const {
+    assert(index < tokens.size() &&
+           "cannot convert unbuffered token into string");
+
+    const Token& token = tokens[index];
+    return source.substr(token.start, token.length());
+}
+
+uint64_t Parser::parseNumber(size_t index) const {
+    const std::string str = tokenToString(index);
+
+    // TODO: error handling
+    int radix = 10;
+    if (str[0] == '0' && str.size() >= 3) {
+        if (str[1] == 'b') {
+            radix = 2;
+        } else if (str[1] == 'o') {
+            radix = 8;
+        } else if (str[1] == 'x') {
+            radix = 16;
+        }
+    }
+
+    // TODO: this is an ugly hack - could we make it better?
+    const char* realStr = radix != 10 ? (str.c_str() + 2) : str.c_str();
+
+    return std::strtoll(realStr, nullptr, radix);
 }
 
 // TODO: better error handling

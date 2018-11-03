@@ -37,17 +37,20 @@ public:
     std::unique_ptr<ast::Root> parseRoot();
     std::unique_ptr<ast::Stmt> parseTopLevelDecl(bool mandatory);
 
+    // statements:
+    std::unique_ptr<ast::Stmt> parseStmt(bool mandatory);
+    std::unique_ptr<ast::Block> parseBlock(bool mandatory);
+    std::unique_ptr<ast::VarDecl> parseVarDecl(bool mandatory);
+    std::unique_ptr<ast::ParamDecl> parseParamDecl();
+    std::vector<std::unique_ptr<ast::ParamDecl>> parseParamDeclList();
+    std::unique_ptr<ast::FnDecl> parseFnDecl(bool mandatory);
+    std::unique_ptr<ast::Return> parseReturn(bool mandatory);
+
+    // expressions:
     std::unique_ptr<ast::Expr> parseExpr(bool mandatory);
     std::unique_ptr<ast::GroupedExpr> parseGroupedExpr(bool mandatory);
     std::unique_ptr<ast::Identifier> parseIdentifier(bool mandatory);
     std::unique_ptr<ast::Expr> parsePrimaryExpr(bool mandatory);
-
-    std::unique_ptr<ast::Stmt> parseStmt(bool mandatory);
-    std::unique_ptr<ast::Return> parseReturn(bool mandatory);
-    std::unique_ptr<ast::VarDecl> parseVarDecl(bool mandatory);
-    std::unique_ptr<ast::ParamDecl> parseParamDecl();
-    std::unique_ptr<ast::FnDecl> parseFnDecl(bool mandatory);
-    std::unique_ptr<ast::Block> parseBlock(bool mandatory);
 
 private:
     const std::string& source;
@@ -80,8 +83,6 @@ private:
 
     std::string tokenToString(size_t index) const;
     uint64_t parseNumber(size_t index) const;
-
-    std::vector<std::unique_ptr<ast::ParamDecl>> parseParamDeclList();
 
     [[noreturn]] void error(const std::string& message);
 };
