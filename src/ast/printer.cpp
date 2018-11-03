@@ -176,7 +176,9 @@ void Printer::printExpr(const Expr& expr) {
     }
     case Node::Kind::LiteralInteger:
     case Node::Kind::LiteralString:
-    case Node::Kind::LiteralBoolean: {
+    case Node::Kind::LiteralBoolean:
+    case Node::Kind::LiteralNil:
+    case Node::Kind::LiteralUndefined: {
         printLiteral(static_cast<const Literal&>(expr));
         break;
     }
@@ -212,6 +214,14 @@ void Printer::printLiteral(const Literal& lit) {
     }
     case Node::Kind::LiteralBoolean: {
         printLiteralBoolean(static_cast<const LiteralBoolean&>(lit));
+        break;
+    }
+    case Node::Kind::LiteralNil: {
+        os << "nil";
+        break;
+    }
+    case Node::Kind::LiteralUndefined: {
+        os << "undefined";
         break;
     }
     default: {

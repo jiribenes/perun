@@ -131,6 +131,11 @@ std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
         return std::make_unique<ast::LiteralBoolean>(true);
     } else if (consumeToken(Token::Kind::KeywordFalse) != nullptr) {
         return std::make_unique<ast::LiteralBoolean>(false);
+    } else if (consumeToken(Token::Kind::KeywordNil) != nullptr) {
+        return std::make_unique<ast::Literal>(ast::Node::Kind::LiteralNil);
+    } else if (consumeToken(Token::Kind::KeywordUndefined) != nullptr) {
+        return std::make_unique<ast::Literal>(
+            ast::Node::Kind::LiteralUndefined);
     }
 
     auto grouped = parseGroupedExpr(false);

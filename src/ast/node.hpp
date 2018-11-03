@@ -32,6 +32,8 @@ public:
         LiteralInteger,
         LiteralString,
         LiteralBoolean,
+        LiteralNil,
+        LiteralUndefined,
     };
 
     explicit Node(Kind kind) : kind(kind) {}
