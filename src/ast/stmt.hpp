@@ -15,6 +15,8 @@ class Identifier;
 class Stmt : public Node {
 public:
     explicit Stmt(Node::Kind kind) : Node(kind) {}
+
+    virtual ~Stmt() = default;
 };
 
 class Block : public Stmt {

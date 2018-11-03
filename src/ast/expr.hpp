@@ -11,6 +11,8 @@ namespace ast {
 class Expr : public Node {
 public:
     explicit Expr(Kind kind) : Node(kind) {}
+
+    virtual ~Expr() = default;
 };
 
 class Identifier : public Expr {
@@ -39,6 +41,8 @@ private:
 class Literal : public Expr {
 public:
     explicit Literal(Kind kind) : Expr(kind) {}
+
+    virtual ~Literal() = default;
 };
 
 class LiteralInteger : public Literal {
@@ -78,8 +82,31 @@ public:
     bool getValue() const { return value; }
 
 private:
-    // TODO: use infinite precision integer
     const bool value;
+};
+
+class LiteralNil : public Literal {
+public:
+    explicit LiteralNil(size_t nilToken)
+        : Literal(Node::Kind::LiteralNil), nilToken(nilToken) {}
+
+    size_t firstTokenIndex() const override { return nilToken; }
+    size_t lastTokenIndex() const override { return nilToken; }
+
+private:
+    size_t nilToken;
+};
+
+class LiteralUndefined : public Literal {
+public:
+    explicit LiteralUndefined(size_t undefinedToken)
+        : Literal(Node::Kind::LiteralUndefined), undefinedToken(undefinedToken) {}
+
+    size_t firstTokenIndex() const override { return undefinedToken; }
+    size_t lastTokenIndex() const override { return undefinedToken; }
+
+private:
+    size_t undefinedToken;
 };
 
 } // namespace ast

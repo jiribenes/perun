@@ -331,10 +331,9 @@ std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
     } else if (consumeToken(Token::Kind::KeywordFalse) != nullptr) {
         return std::make_unique<ast::LiteralBoolean>(false);
     } else if (consumeToken(Token::Kind::KeywordNil) != nullptr) {
-        return std::make_unique<ast::Literal>(ast::Node::Kind::LiteralNil);
+        return std::make_unique<ast::LiteralNil>(tokenIndex);
     } else if (consumeToken(Token::Kind::KeywordUndefined) != nullptr) {
-        return std::make_unique<ast::Literal>(
-            ast::Node::Kind::LiteralUndefined);
+        return std::make_unique<ast::LiteralUndefined>(tokenIndex);
     }
 
     auto grouped = parseGroupedExpr(false);

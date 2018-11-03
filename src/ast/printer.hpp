@@ -24,6 +24,8 @@ class Literal;
 class LiteralInteger;
 class LiteralString;
 class LiteralBoolean;
+class LiteralNil;
+class LiteralUndefined;
 
 // TODO: generalize this into a proper recursive AST visitor
 class Printer {
@@ -48,6 +50,8 @@ public:
     void printLiteralInteger(const LiteralInteger& lit);
     void printLiteralString(const LiteralString& lit);
     void printLiteralBoolean(const LiteralBoolean& lit);
+    void printLiteralNil(const LiteralNil& lit);
+    void printLiteralUndefined(const LiteralUndefined& lit);
 
 private:
     void printIndent();

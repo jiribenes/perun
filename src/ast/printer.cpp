@@ -242,11 +242,11 @@ void Printer::printLiteral(const Literal& lit) {
         break;
     }
     case Node::Kind::LiteralNil: {
-        os << "nil";
+        printLiteralNil(static_cast<const LiteralNil&>(lit));
         break;
     }
     case Node::Kind::LiteralUndefined: {
-        os << "undefined";
+        printLiteralUndefined(static_cast<const LiteralUndefined&>(lit));
         break;
     }
     default: {
@@ -268,6 +268,14 @@ void Printer::printLiteralString(const LiteralString& lit) {
 void Printer::printLiteralBoolean(const LiteralBoolean& lit) {
     auto&& boolStr = lit.getValue() ? "true" : "false";
     os << boolStr;
+}
+
+void Printer::printLiteralNil(const LiteralNil& lit) {
+    os << "nil";
+}
+
+void Printer::printLiteralUndefined(const LiteralUndefined& lit) {
+    os << "undefined";
 }
 
 } // namespace ast
