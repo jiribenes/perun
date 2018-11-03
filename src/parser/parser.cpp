@@ -51,11 +51,16 @@ std::unique_ptr<ast::Stmt> Parser::parseTopLevelDecl(bool mandatory) {
 
 // statements:
 
-// Stmt := Return | VarDecl
+// Stmt := Return | IfStmt | VarDecl
 std::unique_ptr<ast::Stmt> Parser::parseStmt(bool mandatory) {
     auto returnStmt = parseReturn(false);
     if (returnStmt != nullptr) {
         return returnStmt;
+    }
+
+    auto ifStmt = parseIfStmt(false);
+    if (ifStmt != nullptr) {
+        return ifStmt;
     }
 
     auto varDecl = parseVarDecl(false);
@@ -240,6 +245,29 @@ std::unique_ptr<ast::Return> Parser::parseReturn(bool mandatory) {
     }
 
     return std::make_unique<ast::Return>(returnToken, std::move(expr));
+}
+
+// IfStmt := 'if' Expr Block ('else' Block)?
+std::unique_ptr<ast::IfStmt> Parser::parseIfStmt(bool mandatory) {
+    if (consumeToken(Token::Kind::KeywordIf) == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected 'if' in IfStmt");
+    }
+
+    auto&& expr = parseExpr(true);
+    auto&& then = parseBlock(true);
+
+    if (consumeToken(Token::Kind::KeywordElse) == nullptr) {
+        return std::make_unique<ast::IfStmt>(std::move(expr), std::move(then),
+                                             /* otherwise = */ nullptr);
+    }
+
+    auto&& otherwise = parseBlock(true);
+    return std::make_unique<ast::IfStmt>(std::move(expr), std::move(then),
+                                         std::move(otherwise));
 }
 
 // expressions:

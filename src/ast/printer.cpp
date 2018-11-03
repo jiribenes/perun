@@ -46,6 +46,10 @@ void Printer::printStmt(const Stmt& stmt) {
         printReturn(static_cast<const Return&>(stmt));
         break;
     }
+    case Node::Kind::IfStmt: {
+        printIfStmt(static_cast<const IfStmt&>(stmt));
+        break;
+    }
     default: {
         // TODO: raise error
         break;
@@ -162,6 +166,26 @@ void Printer::printReturn(const Return& ret) {
     }
 
     os << ";";
+}
+
+void Printer::printIfStmt(const IfStmt& ifStmt) {
+    os << "if ";
+
+    auto&& condition = ifStmt.getCondition();
+    printExpr(*condition);
+
+    os << ' ';
+
+    auto&& then = ifStmt.getThenBlock();
+    printBlock(*then);
+
+    auto&& otherwise = ifStmt.getElseBlock();
+    if (otherwise != nullptr) {
+        os << " else ";
+        printBlock(*otherwise);
+    }
+
+    os << '\n';
 }
 
 void Printer::printExpr(const Expr& expr) {

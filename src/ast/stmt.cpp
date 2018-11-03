@@ -29,5 +29,10 @@ Return::Return(size_t returnToken, std::unique_ptr<Expr>&& expr)
     : Stmt(Node::Kind::Return), returnToken(returnToken),
       expr(std::move(expr)) {}
 
+IfStmt::IfStmt(std::unique_ptr<Expr>&& condition, std::unique_ptr<Block>&& then,
+               std::unique_ptr<Block>&& otherwise)
+    : Stmt(Node::Kind::IfStmt), condition(std::move(condition)),
+      then(std::move(then)), otherwise(std::move(otherwise)) {}
+
 } // namespace ast
 } // namespace perun

@@ -141,6 +141,24 @@ private:
     std::unique_ptr<Expr> expr; // can be null
 };
 
+class IfStmt : public Stmt {
+public:
+    explicit IfStmt(std::unique_ptr<Expr>&& condition,
+                    std::unique_ptr<Block>&& then,
+                    std::unique_ptr<Block>&& otherwise);
+
+    const Expr* getCondition() const { return condition.get(); }
+    const Block* getThenBlock() const { return then.get(); }
+
+    // can be null
+    const Block* getElseBlock() const { return otherwise.get(); }
+
+private:
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Block> then;
+    std::unique_ptr<Block> otherwise; // can be null
+};
+
 } // namespace ast
 } // namespace perun
 

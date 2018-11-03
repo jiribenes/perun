@@ -14,6 +14,7 @@ class VarDecl;
 class ParamDecl;
 class FnDecl;
 class Return;
+class IfStmt;
 
 class Expr;
 class Identifier;
@@ -37,6 +38,7 @@ public:
     void printParamDecl(const ParamDecl& paramDecl);
     void printFnDecl(const FnDecl& fnDecl);
     void printReturn(const Return& ret);
+    void printIfStmt(const IfStmt& ifStmt);
 
     void printExpr(const Expr& expr);
     void printIdentifier(const Identifier& id);

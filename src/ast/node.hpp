@@ -23,6 +23,7 @@ public:
         ParamDecl,
         FnDecl,
         Return,
+        IfStmt,
 
         // expressions:
         Identifier,

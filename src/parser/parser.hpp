@@ -19,6 +19,7 @@ class VarDecl;
 class ParamDecl;
 class FnDecl;
 class Return;
+class IfStmt;
 
 class Expr;
 class GroupedExpr;
@@ -45,6 +46,7 @@ public:
     std::vector<std::unique_ptr<ast::ParamDecl>> parseParamDeclList();
     std::unique_ptr<ast::FnDecl> parseFnDecl(bool mandatory);
     std::unique_ptr<ast::Return> parseReturn(bool mandatory);
+    std::unique_ptr<ast::IfStmt> parseIfStmt(bool mandatory);
 
     // expressions:
     std::unique_ptr<ast::Expr> parseExpr(bool mandatory);
