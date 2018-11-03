@@ -43,6 +43,7 @@ public:
 
     bool isStmt() const;
     bool isExpr() const;
+    bool isLiteral() const;
 
     /// Predicates for checking node's kind
     bool is(Kind k) const { return kind == k; }
