@@ -69,6 +69,7 @@ void Printer::printBlock(const Block& block) {
     }
 
     indent -= 4;
+    printIndent();
     os << "}";
 }
 
