@@ -5,6 +5,7 @@
 #include "expr.hpp"
 #include "node.hpp"
 #include "stmt.hpp"
+#include "literal.hpp"
 
 namespace perun {
 namespace ast {
