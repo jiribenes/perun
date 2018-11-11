@@ -19,6 +19,7 @@ class IfStmt;
 class Expr;
 class Identifier;
 class GroupedExpr;
+class PrefixExpr;
 class SuffixExpr;
 
 class Literal;
@@ -51,6 +52,7 @@ public:
     void printExpr(const Expr& expr);
     void printIdentifier(const Identifier& id);
     void printGroupedExpr(const GroupedExpr& grouped);
+    void printPrefixExpr(const PrefixExpr& expr);
     void printSuffixExpr(const SuffixExpr& expr);
 
     void printLiteral(const Literal& lit);
@@ -61,6 +63,7 @@ public:
     void printLiteralUndefined(const LiteralUndefined& lit);
 
     // helper functions:
+    void printPrefixOp(const PrefixOp& op);
     void printSuffixOp(const SuffixOp& op);
 
 private:

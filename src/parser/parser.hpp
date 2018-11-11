@@ -24,9 +24,11 @@ class IfStmt;
 class Expr;
 class GroupedExpr;
 class Identifier;
+class PrefixExpr;
 class SuffixExpr;
 
 // pre-declared ops
+enum class PrefixOp : short;
 enum class SuffixOp : short;
 } // namespace ast
 
@@ -57,8 +59,11 @@ public:
     std::unique_ptr<ast::GroupedExpr> parseGroupedExpr(bool mandatory);
     std::unique_ptr<ast::Identifier> parseIdentifier(bool mandatory);
     std::unique_ptr<ast::Expr> parsePrimaryExpr(bool mandatory);
+    std::unique_ptr<ast::Expr> parsePrefixExpr(bool mandatory);
     std::unique_ptr<ast::Expr> parseSuffixExpr(bool mandatory);
 
+    // operations:
+    ast::PrefixOp parsePrefixOp();
     ast::SuffixOp parseSuffixOp();
 
 private:

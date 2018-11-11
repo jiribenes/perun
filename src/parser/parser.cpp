@@ -379,6 +379,12 @@ std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
     error("could not parse primary expr");
 }
 
+// PrefixExpr := PrefixOp PrefixExpr | SuffixExpr
+std::unique_ptr<ast::Expr> Parser::parsePrefixExpr(bool mandatory) {
+    // TODO
+    assert(false && "Not implemented yet!");
+}
+
 // SuffixExpr := PrimExpr (SuffixOp | FnCall)*
 std::unique_ptr<ast::Expr> Parser::parseSuffixExpr(bool mandatory) {
     std::unique_ptr<ast::Expr> expr = parsePrimaryExpr(false);
@@ -406,6 +412,11 @@ std::unique_ptr<ast::Expr> Parser::parseSuffixExpr(bool mandatory) {
     }
 
     return expr;
+}
+
+// PrefixOp := TODO
+ast::PrefixOp Parser::parsePrefixOp() {
+    assert(false && "Not implemented yet!");
 }
 
 // SuffixOp := '^' | '?'

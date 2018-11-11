@@ -200,6 +200,10 @@ void Printer::printExpr(const Expr& expr) {
         printGroupedExpr(static_cast<const GroupedExpr&>(expr));
         break;
     }
+    case Node::Kind::PrefixExpr: {
+        printPrefixExpr(static_cast<const PrefixExpr&>(expr));
+        break;
+    }
     case Node::Kind::SuffixExpr: {
         printSuffixExpr(static_cast<const SuffixExpr&>(expr));
         break;
@@ -229,6 +233,15 @@ void Printer::printGroupedExpr(const GroupedExpr& grouped) {
     printExpr(*inner);
 
     os << ')';
+}
+
+void Printer::printPrefixExpr(const PrefixExpr& expr) {
+    auto&& rhs = expr.getRHS();
+    assert(rhs != nullptr);
+
+    printPrefixOp(expr.getOp());
+
+    printExpr(*rhs);
 }
 
 void Printer::printSuffixExpr(const SuffixExpr& expr) {
@@ -288,6 +301,32 @@ void Printer::printLiteralNil(const LiteralNil& lit) { os << "nil"; }
 
 void Printer::printLiteralUndefined(const LiteralUndefined& lit) {
     os << "undefined";
+}
+
+void Printer::printPrefixOp(const PrefixOp& op) {
+    switch (op) {
+    case PrefixOp::Address: {
+        os << '&';
+        return;
+    }
+    case PrefixOp::BitNot: {
+        os << '~';
+        return;
+    }
+    case PrefixOp::BoolNot: {
+        os << '!';
+        return;
+    }
+    case PrefixOp::Negate: {
+        os << '-';
+        return;
+    }
+    case PrefixOp::OptionalType: {
+        os << '?';
+        return;
+    }
+    default: { assert(false); }
+    }
 }
 
 void Printer::printSuffixOp(const SuffixOp& op) {
