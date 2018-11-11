@@ -204,6 +204,10 @@ void Printer::printExpr(const Expr& expr) {
         printPrefixExpr(static_cast<const PrefixExpr&>(expr));
         break;
     }
+    case Node::Kind::InfixExpr: {
+        printInfixExpr(static_cast<const InfixExpr&>(expr));
+        break;
+    }
     case Node::Kind::SuffixExpr: {
         printSuffixExpr(static_cast<const SuffixExpr&>(expr));
         break;
@@ -241,6 +245,19 @@ void Printer::printPrefixExpr(const PrefixExpr& expr) {
 
     printPrefixOp(expr.getOp());
 
+    printExpr(*rhs);
+}
+
+void Printer::printInfixExpr(const InfixExpr& expr) {
+    auto&& lhs = expr.getLHS();
+    auto&& rhs = expr.getRHS();
+
+    assert(lhs != nullptr && rhs != nullptr);
+
+    printExpr(*lhs);
+    os << ' ';
+    printInfixOp(expr.getOp());
+    os << ' ';
     printExpr(*rhs);
 }
 
@@ -323,6 +340,120 @@ void Printer::printPrefixOp(const PrefixOp& op) {
     }
     case PrefixOp::OptionalType: {
         os << '?';
+        return;
+    }
+    default: { assert(false); }
+    }
+}
+
+void Printer::printInfixOp(const InfixOp& op) {
+    switch (op) {
+    case InfixOp::Assign: {
+        os << "=";
+        return;
+    }
+    case InfixOp::AssignBitAnd: {
+        os << "&=";
+        return;
+    }
+    case InfixOp::AssignBitOr: {
+        os << "|=";
+        return;
+    }
+    case InfixOp::AssignBitSHL: {
+        os << "<<=";
+        return;
+    }
+    case InfixOp::AssignBitSHR: {
+        os << ">>=";
+        return;
+    }
+    case InfixOp::AssignDiv: {
+        os << "/=";
+        return;
+    }
+    case InfixOp::AssignMod: {
+        os << "%=";
+        return;
+    }
+    case InfixOp::AssignMul: {
+        os << "*=";
+        return;
+    }
+    case InfixOp::AssignPlus: {
+        os << "+=";
+        return;
+    }
+    case InfixOp::AssignSub: {
+        os << "-=";
+        return;
+    }
+    case InfixOp::BitAnd: {
+        os << "&";
+        return;
+    }
+    case InfixOp::BitOr: {
+        os << "|";
+        return;
+    }
+    case InfixOp::BitSHL: {
+        os << "<<";
+        return;
+    }
+    case InfixOp::BitSHR: {
+        os << ">>";
+        return;
+    }
+    case InfixOp::BoolAnd: {
+        os << "and";
+        return;
+    }
+    case InfixOp::BoolOr: {
+        os << "or";
+        return;
+    }
+    case InfixOp::EqualEqual: {
+        os << "==";
+        return;
+    }
+    case InfixOp::Greater: {
+        os << ">";
+        return;
+    }
+    case InfixOp::GreaterEqual: {
+        os << ">=";
+        return;
+    }
+    case InfixOp::Less: {
+        os << "<";
+        return;
+    }
+    case InfixOp::LessEqual: {
+        os << "<=";
+        return;
+    }
+    case InfixOp::NotEqual: {
+        os << "!=";
+        return;
+    }
+    case InfixOp::Div: {
+        os << "/";
+        return;
+    }
+    case InfixOp::Mod: {
+        os << "%";
+        return;
+    }
+    case InfixOp::Mul: {
+        os << "*";
+        return;
+    }
+    case InfixOp::Add: {
+        os << "+";
+        return;
+    }
+    case InfixOp::Sub: {
+        os << "-";
         return;
     }
     default: { assert(false); }

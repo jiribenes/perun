@@ -30,6 +30,7 @@ public:
         Identifier,
         GroupedExpr,
         PrefixExpr,
+        InfixExpr,
         SuffixExpr,
 
         // literals:

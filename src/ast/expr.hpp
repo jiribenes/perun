@@ -92,6 +92,79 @@ private:
     size_t opToken;
 };
 
+enum class InfixOp : short {
+    Invalid = -1,
+
+    // assign
+    Assign,
+    AssignBitAnd,
+    AssignBitOr,
+    AssignBitSHL,
+    AssignBitSHR,
+    AssignDiv,
+    AssignMod,
+    AssignMul,
+    AssignPlus,
+    AssignSub,
+
+    // bitwise
+    BitAnd,
+    BitOr,
+    BitSHL,
+    BitSHR,
+
+    // boolean/conditional
+    BoolAnd,
+    BoolOr,
+
+    // comparison
+    EqualEqual,
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
+    NotEqual,
+
+    // multiplicative
+    Div,
+    Mod,
+    Mul,
+
+    // additive
+    Add,
+    Sub,
+};
+
+class InfixExpr : public Expr {
+public:
+    using Op = InfixOp;
+
+    explicit InfixExpr(std::unique_ptr<Expr>&& lhs, std::unique_ptr<Expr>&& rhs,
+                       Op op, size_t opToken)
+        : Expr(Node::Kind::InfixExpr), lhs(std::move(lhs)), rhs(std::move(rhs)),
+          op(op), opToken(opToken) {}
+
+    /// Predicates for checking the op
+    bool is(Op o) const { return op == o; }
+    bool isNot(Op o) const { return op != o; }
+    bool isOneOf(Op o1, Op o2) const { return is(o1) || is(o2); }
+    template <typename... Ts> bool isOneOf(Op o1, Op o2, Ts... os) const {
+        return is(o1) || isOneOf(o2, os...);
+    }
+
+    const Expr* getLHS() const { return lhs.get(); }
+    const Expr* getRHS() const { return rhs.get(); }
+    Op getOp() const { return op; }
+    size_t firstTokenIndex() const override { return lhs->firstTokenIndex(); }
+    size_t lastTokenIndex() const override { return rhs->lastTokenIndex(); }
+
+private:
+    std::unique_ptr<Expr> lhs;
+    std::unique_ptr<Expr> rhs;
+    Op op;
+    size_t opToken;
+};
+
 enum class SuffixOp : short {
     Invalid = -1,
 
