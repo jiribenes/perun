@@ -240,7 +240,7 @@ std::unique_ptr<ast::FnDecl> Parser::parseFnDecl(bool mandatory) {
         modifierToken, semicolonToken);
 }
 
-// Return := 'return' Expr ';'
+// Return := 'return' Expr? ';'
 std::unique_ptr<ast::Return> Parser::parseReturn(bool mandatory) {
     size_t returnToken;
 
@@ -252,7 +252,7 @@ std::unique_ptr<ast::Return> Parser::parseReturn(bool mandatory) {
         error("expected keyword 'return' while parsing return node");
     }
 
-    auto expr = parseExpr(false);
+    auto&& expr = parseExpr(false);
 
     if (consumeToken(Token::Kind::Semicolon) == nullptr) {
         error("expected semicolon");
@@ -297,9 +297,9 @@ std::unique_ptr<ast::IfStmt> Parser::parseIfStmt(bool mandatory) {
 
 // Expr := PrimaryExpr
 std::unique_ptr<ast::Expr> Parser::parseExpr(bool mandatory) {
-    auto primExpr = parsePrimaryExpr(false);
-    if (primExpr != nullptr) {
-        return primExpr;
+    auto suffixExpr = parseSuffixExpr(false);
+    if (suffixExpr != nullptr) {
+        return suffixExpr;
     }
 
     if (!mandatory) {
@@ -377,6 +377,53 @@ std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
         return nullptr;
     }
     error("could not parse primary expr");
+}
+
+// SuffixExpr := PrimExpr (SuffixOp | FnCall)*
+std::unique_ptr<ast::Expr> Parser::parseSuffixExpr(bool mandatory) {
+    std::unique_ptr<ast::Expr> expr = parsePrimaryExpr(false);
+    if (expr == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected PrimExpr in SuffixExpr");
+    }
+
+    while (true) {
+        // either a suffix op
+        auto op = parseSuffixOp();
+        if (op != ast::SuffixOp::Invalid) {
+            size_t opToken = tokenIndex;
+            auto&& newExpr =
+                std::make_unique<ast::SuffixExpr>(std::move(expr), op, opToken);
+            expr = std::move(newExpr);
+            continue;
+        }
+
+        // TODO: add function call, array access, slice, member access
+        break;
+    }
+
+    return expr;
+}
+
+// SuffixOp := '^' | '?'
+ast::SuffixOp Parser::parseSuffixOp() {
+    auto token = consumeOneOf(Token::Kind::Caret, Token::Kind::Question);
+    if (token == nullptr) {
+        return ast::SuffixOp::Invalid;
+    }
+
+    switch (token->getKind()) {
+    case Token::Kind::Caret: {
+        return ast::SuffixOp::Deref;
+    }
+    case Token::Kind::Question: {
+        return ast::SuffixOp::Unwrap;
+    }
+    default: { assert(false); }
+    }
 }
 
 void Parser::fetchToken() {

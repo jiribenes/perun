@@ -19,6 +19,7 @@ class IfStmt;
 class Expr;
 class Identifier;
 class GroupedExpr;
+class SuffixExpr;
 
 class Literal;
 class LiteralInteger;
@@ -26,6 +27,11 @@ class LiteralString;
 class LiteralBoolean;
 class LiteralNil;
 class LiteralUndefined;
+
+// pre-declared ops
+enum class PrefixOp : short;
+enum class InfixOp : short;
+enum class SuffixOp : short;
 
 // TODO: generalize this into a proper recursive AST visitor
 class Printer {
@@ -45,6 +51,7 @@ public:
     void printExpr(const Expr& expr);
     void printIdentifier(const Identifier& id);
     void printGroupedExpr(const GroupedExpr& grouped);
+    void printSuffixExpr(const SuffixExpr& expr);
 
     void printLiteral(const Literal& lit);
     void printLiteralInteger(const LiteralInteger& lit);
@@ -52,6 +59,9 @@ public:
     void printLiteralBoolean(const LiteralBoolean& lit);
     void printLiteralNil(const LiteralNil& lit);
     void printLiteralUndefined(const LiteralUndefined& lit);
+
+    // helper functions:
+    void printSuffixOp(const SuffixOp& op);
 
 private:
     void printIndent();

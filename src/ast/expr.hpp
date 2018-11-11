@@ -53,6 +53,41 @@ private:
     size_t lParenToken, rParenToken;
 };
 
+// operations:
+enum class SuffixOp : short {
+    Invalid = -1,
+
+    Deref,
+    Unwrap,
+};
+
+class SuffixExpr : public Expr {
+public:
+    using Op = SuffixOp;
+
+    explicit SuffixExpr(std::unique_ptr<Expr>&& lhs, Op op, size_t opToken)
+        : Expr(Node::Kind::SuffixExpr), lhs(std::move(lhs)), op(op),
+          opToken(opToken) {}
+
+    /// Predicates for checking the op
+    bool is(Op o) const { return op == o; }
+    bool isNot(Op o) const { return op != o; }
+    bool isOneOf(Op o1, Op o2) const { return is(o1) || is(o2); }
+    template <typename... Ts> bool isOneOf(Op o1, Op o2, Ts... os) const {
+        return is(o1) || isOneOf(o2, os...);
+    }
+
+    const Expr* getLHS() const { return lhs.get(); }
+    Op getOp() const { return op; }
+    size_t firstTokenIndex() const override { return lhs->firstTokenIndex(); }
+    size_t lastTokenIndex() const override { return opToken; }
+
+private:
+    std::unique_ptr<Expr> lhs;
+    Op op;
+    size_t opToken;
+};
+
 } // namespace ast
 } // namespace perun
 

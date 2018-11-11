@@ -200,6 +200,10 @@ void Printer::printExpr(const Expr& expr) {
         printGroupedExpr(static_cast<const GroupedExpr&>(expr));
         break;
     }
+    case Node::Kind::SuffixExpr: {
+        printSuffixExpr(static_cast<const SuffixExpr&>(expr));
+        break;
+    }
     case Node::Kind::LiteralInteger:
     case Node::Kind::LiteralString:
     case Node::Kind::LiteralBoolean:
@@ -225,6 +229,15 @@ void Printer::printGroupedExpr(const GroupedExpr& grouped) {
     printExpr(*inner);
 
     os << ')';
+}
+
+void Printer::printSuffixExpr(const SuffixExpr& expr) {
+    auto&& lhs = expr.getLHS();
+
+    assert(lhs != nullptr);
+
+    printExpr(*lhs);
+    printSuffixOp(expr.getOp());
 }
 
 void Printer::printLiteral(const Literal& lit) {
@@ -275,6 +288,20 @@ void Printer::printLiteralNil(const LiteralNil& lit) { os << "nil"; }
 
 void Printer::printLiteralUndefined(const LiteralUndefined& lit) {
     os << "undefined";
+}
+
+void Printer::printSuffixOp(const SuffixOp& op) {
+    switch (op) {
+    case SuffixOp::Deref: {
+        os << "^";
+        return;
+    }
+    case SuffixOp::Unwrap: {
+        os << "?";
+        return;
+    }
+    default: { assert(false); }
+    }
 }
 
 } // namespace ast

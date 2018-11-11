@@ -29,6 +29,7 @@ public:
         // expressions:
         Identifier,
         GroupedExpr,
+        SuffixExpr,
 
         // literals:
         LiteralInteger,

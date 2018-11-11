@@ -24,6 +24,10 @@ class IfStmt;
 class Expr;
 class GroupedExpr;
 class Identifier;
+class SuffixExpr;
+
+// pre-declared ops
+enum class SuffixOp : short;
 } // namespace ast
 
 namespace parser {
@@ -53,6 +57,9 @@ public:
     std::unique_ptr<ast::GroupedExpr> parseGroupedExpr(bool mandatory);
     std::unique_ptr<ast::Identifier> parseIdentifier(bool mandatory);
     std::unique_ptr<ast::Expr> parsePrimaryExpr(bool mandatory);
+    std::unique_ptr<ast::Expr> parseSuffixExpr(bool mandatory);
+
+    ast::SuffixOp parseSuffixOp();
 
 private:
     const std::string& source;
