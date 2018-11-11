@@ -597,7 +597,7 @@ Token Tokenizer::nextToken() {
         }
         case State::Question: {
             switch (c) {
-            case '?': { // ?=
+            case '=': { // ?=
                 token.setKind(Token::Kind::QuestionEq);
                 pos++;
                 complete = true;
