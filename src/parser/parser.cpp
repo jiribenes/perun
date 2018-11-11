@@ -3,9 +3,9 @@
 #include <iostream>
 
 #include "../ast/expr.hpp"
+#include "../ast/literal.hpp"
 #include "../ast/node.hpp"
 #include "../ast/stmt.hpp"
-#include "../ast/literal.hpp"
 
 namespace perun {
 namespace parser {

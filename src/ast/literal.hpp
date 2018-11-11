@@ -3,8 +3,8 @@
 
 #include <string>
 
-#include "node.hpp"
 #include "expr.hpp"
+#include "node.hpp"
 
 namespace perun {
 namespace ast {
@@ -105,4 +105,3 @@ private:
 } // namespace perun
 
 #endif // PERUN_AST_LITERAL_HPP
-
