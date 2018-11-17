@@ -295,11 +295,11 @@ std::unique_ptr<ast::IfStmt> Parser::parseIfStmt(bool mandatory) {
 
 // expressions:
 
-// Expr := PrimaryExpr
+// Expr := PrefixExpr
 std::unique_ptr<ast::Expr> Parser::parseExpr(bool mandatory) {
-    auto suffixExpr = parseSuffixExpr(false);
-    if (suffixExpr != nullptr) {
-        return suffixExpr;
+    auto prefixExpr = parsePrefixExpr(false);
+    if (prefixExpr != nullptr) {
+        return prefixExpr;
     }
 
     if (!mandatory) {
@@ -381,8 +381,17 @@ std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
 
 // PrefixExpr := PrefixOp PrefixExpr | SuffixExpr
 std::unique_ptr<ast::Expr> Parser::parsePrefixExpr(bool mandatory) {
-    // TODO
-    assert(false && "Not implemented yet!");
+    auto op = parsePrefixOp();
+    if (op == ast::PrefixOp::Invalid) {
+        return parseSuffixExpr(mandatory);
+    }
+
+    auto&& expr = parsePrefixExpr(true);
+    size_t opToken = tokenIndex;
+    auto&& prefix_expr =
+        std::make_unique<ast::PrefixExpr>(std::move(expr), op, opToken);
+
+    return std::move(prefix_expr);
 }
 
 // InfixExpr := TODO
@@ -421,7 +430,31 @@ std::unique_ptr<ast::Expr> Parser::parseSuffixExpr(bool mandatory) {
 
 // PrefixOp := TODO
 ast::PrefixOp Parser::parsePrefixOp() {
-    assert(false && "Not implemented yet!");
+    auto token = consumeOneOf(Token::Kind::Ampersand, Token::Kind::Tilde,
+                              Token::Kind::Bang, Token::Kind::Minus,
+                              Token::Kind::Question);
+    if (token == nullptr) {
+        return ast::PrefixOp::Invalid;
+    }
+
+    switch (token->getKind()) {
+    case Token::Kind::Ampersand: {
+        return ast::PrefixOp::Address;
+    }
+    case Token::Kind::Tilde: {
+        return ast::PrefixOp::BitNot;
+    }
+    case Token::Kind::Bang: {
+        return ast::PrefixOp::BoolNot;
+    }
+    case Token::Kind::Minus: {
+        return ast::PrefixOp::Negate;
+    }
+    case Token::Kind::Question: {
+        return ast::PrefixOp::OptionalType;
+    }
+    default: { assert(false); }
+    }
 }
 
 // InfixOp := TODO
