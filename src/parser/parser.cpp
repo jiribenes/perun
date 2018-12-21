@@ -295,11 +295,11 @@ std::unique_ptr<ast::IfStmt> Parser::parseIfStmt(bool mandatory) {
 
 // expressions:
 
-// Expr := PrefixExpr
+// Expr := MultExpr
 std::unique_ptr<ast::Expr> Parser::parseExpr(bool mandatory) {
-    auto prefixExpr = parsePrefixExpr(false);
-    if (prefixExpr != nullptr) {
-        return prefixExpr;
+    auto multExpr = parseMultExpr(false);
+    if (multExpr != nullptr) {
+        return multExpr;
     }
 
     if (!mandatory) {
@@ -394,6 +394,38 @@ std::unique_ptr<ast::Expr> Parser::parsePrefixExpr(bool mandatory) {
     return std::move(prefix_expr);
 }
 
+// MultExpr := PrefixExpr (MultOp PrefixExpr)*
+std::unique_ptr<ast::Expr> Parser::parseMultExpr(bool mandatory) {
+    std::unique_ptr<ast::Expr> expr = parsePrefixExpr(false);
+    if (expr == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected PrefixExpr in MultExpr");
+    }
+
+    while (true) {
+        auto op = parseMultOp();
+        if (op == ast::InfixOp::Invalid) {
+            break;
+        }
+
+        size_t opToken = tokenIndex;
+
+        // if we parsed the MultOp correctly,
+        // then the next thing must be a PrefixExpr
+        auto&& rhs = parsePrefixExpr(true);
+
+        auto&& newExpr = std::make_unique<ast::InfixExpr>(
+            std::move(expr), std::move(rhs), op, opToken);
+
+        expr = std::move(newExpr);
+    }
+
+    return expr;
+}
+
 // InfixExpr := TODO
 std::unique_ptr<ast::Expr> Parser::parseInfixExpr(bool mandatory) {
     assert(false && "Not implemented yet!");
@@ -459,6 +491,27 @@ ast::PrefixOp Parser::parsePrefixOp() {
 
 // InfixOp := TODO
 ast::InfixOp Parser::parseInfixOp() { assert(false && "Not implemented yet!"); }
+
+ast::InfixOp Parser::parseMultOp() {
+    auto token = consumeOneOf(Token::Kind::Slash, Token::Kind::Percent,
+                              Token::Kind::Star);
+    if (token == nullptr) {
+        return ast::InfixOp::Invalid;
+    }
+
+    switch (token->getKind()) {
+    case Token::Kind::Slash: {
+        return ast::InfixOp::Div;
+    }
+    case Token::Kind::Percent: {
+        return ast::InfixOp::Mod;
+    }
+    case Token::Kind::Star: {
+        return ast::InfixOp::Mul;
+    }
+    default: { assert(false); }
+    }
+}
 
 // SuffixOp := '^' | '?'
 ast::SuffixOp Parser::parseSuffixOp() {
