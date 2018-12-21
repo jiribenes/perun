@@ -63,13 +63,19 @@ public:
     std::unique_ptr<ast::Expr> parsePrimaryExpr(bool mandatory);
     std::unique_ptr<ast::Expr> parsePrefixExpr(bool mandatory);
     std::unique_ptr<ast::Expr> parseMultExpr(bool mandatory);
-    std::unique_ptr<ast::Expr> parseInfixExpr(bool mandatory);
+    std::unique_ptr<ast::Expr> parseAddExpr(bool mandatory);
+    std::unique_ptr<ast::Expr> parseShiftExpr(bool mandatory);
+    std::unique_ptr<ast::Expr> parseBitExpr(bool mandatory);
+    std::unique_ptr<ast::Expr> parseCompareExpr(bool mandatory);
     std::unique_ptr<ast::Expr> parseSuffixExpr(bool mandatory);
 
     // operations:
     ast::PrefixOp parsePrefixOp();
-    ast::InfixOp parseInfixOp();
     ast::InfixOp parseMultOp();
+    ast::InfixOp parseAddOp();
+    ast::InfixOp parseShiftOp();
+    ast::InfixOp parseBitOp();
+    ast::InfixOp parseCompareOp();
     ast::SuffixOp parseSuffixOp();
 
 private:

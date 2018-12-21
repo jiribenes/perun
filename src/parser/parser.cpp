@@ -295,11 +295,11 @@ std::unique_ptr<ast::IfStmt> Parser::parseIfStmt(bool mandatory) {
 
 // expressions:
 
-// Expr := MultExpr
+// Expr := CompareExpr
 std::unique_ptr<ast::Expr> Parser::parseExpr(bool mandatory) {
-    auto multExpr = parseMultExpr(false);
-    if (multExpr != nullptr) {
-        return multExpr;
+    auto expr = parseCompareExpr(false);
+    if (expr != nullptr) {
+        return expr;
     }
 
     if (!mandatory) {
@@ -426,9 +426,132 @@ std::unique_ptr<ast::Expr> Parser::parseMultExpr(bool mandatory) {
     return expr;
 }
 
-// InfixExpr := TODO
-std::unique_ptr<ast::Expr> Parser::parseInfixExpr(bool mandatory) {
-    assert(false && "Not implemented yet!");
+// AddExpr := MultExpr (AddOp MultExpr)*
+std::unique_ptr<ast::Expr> Parser::parseAddExpr(bool mandatory) {
+    std::unique_ptr<ast::Expr> expr = parseMultExpr(false);
+    if (expr == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected MultExpr in AddExpr");
+    }
+
+    while (true) {
+        auto op = parseAddOp();
+        if (op == ast::InfixOp::Invalid) {
+            break;
+        }
+
+        size_t opToken = tokenIndex;
+
+        // if we parsed the AddOp correctly,
+        // then the next thing must be a MultExpr
+        auto&& rhs = parseMultExpr(true);
+
+        auto&& newExpr = std::make_unique<ast::InfixExpr>(
+            std::move(expr), std::move(rhs), op, opToken);
+
+        expr = std::move(newExpr);
+    }
+
+    return expr;
+}
+
+// ShiftExpr := AddExpr (ShiftOp AddExpr)*
+std::unique_ptr<ast::Expr> Parser::parseShiftExpr(bool mandatory) {
+    std::unique_ptr<ast::Expr> expr = parseAddExpr(false);
+    if (expr == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected AddExpr in ShiftExpr");
+    }
+
+    while (true) {
+        auto op = parseShiftOp();
+        if (op == ast::InfixOp::Invalid) {
+            break;
+        }
+
+        size_t opToken = tokenIndex;
+
+        // if we parsed the ShiftOp correctly,
+        // then the next thing must be a AddExpr
+        auto&& rhs = parseAddExpr(true);
+
+        auto&& newExpr = std::make_unique<ast::InfixExpr>(
+            std::move(expr), std::move(rhs), op, opToken);
+
+        expr = std::move(newExpr);
+    }
+
+    return expr;
+}
+
+// BitExpr := ShiftExpr (BitOp ShiftExpr)*
+std::unique_ptr<ast::Expr> Parser::parseBitExpr(bool mandatory) {
+    std::unique_ptr<ast::Expr> expr = parseShiftExpr(false);
+    if (expr == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected ShiftExpr in BitExpr");
+    }
+
+    while (true) {
+        auto op = parseBitOp();
+        if (op == ast::InfixOp::Invalid) {
+            break;
+        }
+
+        size_t opToken = tokenIndex;
+
+        // if we parsed the BitOp correctly,
+        // then the next thing must be a ShiftExpr
+        auto&& rhs = parseShiftExpr(true);
+
+        auto&& newExpr = std::make_unique<ast::InfixExpr>(
+            std::move(expr), std::move(rhs), op, opToken);
+
+        expr = std::move(newExpr);
+    }
+
+    return expr;
+}
+
+// CompareExpr := BitExpr (CompareOp BitExpr)*
+std::unique_ptr<ast::Expr> Parser::parseCompareExpr(bool mandatory) {
+    std::unique_ptr<ast::Expr> expr = parseBitExpr(false);
+    if (expr == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected BitExpr in CompareExpr");
+    }
+
+    while (true) {
+        auto op = parseCompareOp();
+        if (op == ast::InfixOp::Invalid) {
+            break;
+        }
+
+        size_t opToken = tokenIndex;
+
+        // if we parsed the CompareOp correctly,
+        // then the next thing must be a BitExpr
+        auto&& rhs = parseBitExpr(true);
+
+        auto&& newExpr = std::make_unique<ast::InfixExpr>(
+            std::move(expr), std::move(rhs), op, opToken);
+
+        expr = std::move(newExpr);
+    }
+
+    return expr;
 }
 
 // SuffixExpr := PrimExpr (SuffixOp | FnCall)*
@@ -489,9 +612,7 @@ ast::PrefixOp Parser::parsePrefixOp() {
     }
 }
 
-// InfixOp := TODO
-ast::InfixOp Parser::parseInfixOp() { assert(false && "Not implemented yet!"); }
-
+// MultOp := '/' | '%' | '*'
 ast::InfixOp Parser::parseMultOp() {
     auto token = consumeOneOf(Token::Kind::Slash, Token::Kind::Percent,
                               Token::Kind::Star);
@@ -508,6 +629,93 @@ ast::InfixOp Parser::parseMultOp() {
     }
     case Token::Kind::Star: {
         return ast::InfixOp::Mul;
+    }
+    default: { assert(false); }
+    }
+}
+
+// AddOp := '+' | '-'
+ast::InfixOp Parser::parseAddOp() {
+    auto token = consumeOneOf(Token::Kind::Plus, Token::Kind::Minus);
+    if (token == nullptr) {
+        return ast::InfixOp::Invalid;
+    }
+
+    switch (token->getKind()) {
+    case Token::Kind::Plus: {
+        return ast::InfixOp::Add;
+    }
+    case Token::Kind::Minus: {
+        return ast::InfixOp::Sub;
+    }
+    default: { assert(false); }
+    }
+}
+
+// ShiftOp := '>>' | '<<'
+ast::InfixOp Parser::parseShiftOp() {
+    auto token =
+        consumeOneOf(Token::Kind::GreaterGreater, Token::Kind::LessLess);
+    if (token == nullptr) {
+        return ast::InfixOp::Invalid;
+    }
+
+    switch (token->getKind()) {
+    case Token::Kind::GreaterGreater: {
+        return ast::InfixOp::BitSHR;
+    }
+    case Token::Kind::LessLess: {
+        return ast::InfixOp::BitSHL;
+    }
+    default: { assert(false); }
+    }
+}
+
+// BitOp := '&' | '|'
+ast::InfixOp Parser::parseBitOp() {
+    auto token = consumeOneOf(Token::Kind::Ampersand, Token::Kind::Pipe);
+    if (token == nullptr) {
+        return ast::InfixOp::Invalid;
+    }
+
+    switch (token->getKind()) {
+    case Token::Kind::Ampersand: {
+        return ast::InfixOp::BitAnd;
+    }
+    case Token::Kind::Pipe: {
+        return ast::InfixOp::BitOr;
+    }
+    default: { assert(false); }
+    }
+}
+
+// CompareOp := '==' | '>' | '>=' | '<' | '<=' | '!='
+ast::InfixOp Parser::parseCompareOp() {
+    auto token = consumeOneOf(Token::Kind::EqEq, Token::Kind::Greater,
+                              Token::Kind::GreaterEq, Token::Kind::Less,
+                              Token::Kind::LessEq, Token::Kind::BangEq);
+    if (token == nullptr) {
+        return ast::InfixOp::Invalid;
+    }
+
+    switch (token->getKind()) {
+    case Token::Kind::EqEq: {
+        return ast::InfixOp::EqualEqual;
+    }
+    case Token::Kind::Greater: {
+        return ast::InfixOp::Greater;
+    }
+    case Token::Kind::GreaterEq: {
+        return ast::InfixOp::GreaterEqual;
+    }
+    case Token::Kind::Less: {
+        return ast::InfixOp::Less;
+    }
+    case Token::Kind::LessEq: {
+        return ast::InfixOp::LessEqual;
+    }
+    case Token::Kind::BangEq: {
+        return ast::InfixOp::NotEqual;
     }
     default: { assert(false); }
     }
