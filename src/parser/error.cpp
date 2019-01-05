@@ -29,8 +29,15 @@ const std::string ParseError::getMessage() const {
 
     // print a line with a marker where the error is located
     for (size_t i = 0; i < sourceLine.size() + 1; ++i) {
+        char c = ' ';
+        if (i < sourceLine.size()) {
+            c = sourceLine[i];
+        }
+
         if (i == loc.column) {
             ss << "^";
+        } else if (c == '\t') {
+            ss << "\t";
         } else {
             ss << " ";
         }
