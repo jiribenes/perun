@@ -1,45 +1,67 @@
+#include "driver.hpp"
+
 #include "error.hpp"
-
-#include "../parser/parser.hpp"
-
-#include "../ast/printer.hpp"
-#include "../ast/stmt.hpp"
 
 #include "../support/util.hpp"
 
-#include <iostream>
-#include <utility>
+#include "../ast/printer.hpp"
+#include "../ast/tree.hpp"
 
-using namespace perun;
+#include "../parser/parser.hpp"
 
-[[noreturn]] static void error(DriverError err, bool printUsage = true) {
-    std::cerr << err.getMessage();
-    if (printUsage) {
-        std::cerr << "Usage: perun file" << std::endl;
+#include <algorithm>
+
+namespace perun {
+namespace driver {
+
+static bool hasFlag(std::string flag, std::vector<std::string>& args) {
+    auto&& it = std::find(args.begin(), args.end(), flag);
+    bool contains = it != args.end();
+    if (contains) {
+        args.erase(it);
     }
-    exit(1);
+    return contains;
 }
 
-int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        error(DriverError("-", "Invalid arguments!"));
+BuildResult build(std::vector<std::string>& args) {
+    bool verbose = hasFlag("--verbose", args) || hasFlag("-v", args);
+
+    for (auto&& arg : args) {
+        if (arg.empty() || arg[0] == '-') {
+            return BuildResult(std::make_unique<DriverError>(
+                "", "unsupported option '" + arg + "'"));
+        }
     }
 
-    const std::string filepath = argv[1];
-    auto source = support::readFile(filepath);
+    if (args.empty()) {
+        return BuildResult(std::make_unique<DriverError>("", "no input file"));
+    }
+
+    if (args.size() != 1) {
+        return BuildResult(
+            std::make_unique<DriverError>("", "only one input file allowed"));
+    }
+
+    const std::string file = args[0];
+
+    std::string source = support::readFile(file);
     if (source.empty()) {
-        error(DriverError(std::move(filepath), "Invalid file!"));
+        const std::string filename_copy = file;
+        return BuildResult(std::make_unique<DriverError>(
+            std::move(filename_copy), "could not load file"));
     }
 
-    parser::Parser parser(source);
-    ast::Printer printer(std::cout, 0);
+    auto&& tree = ast::Tree::get(std::move(file), std::move(source));
+    assert(tree != nullptr);
 
-    std::cout << "Original file - " << filepath << " :" << std::endl;
-    std::cout << source << '\n' << std::endl;
+    if (verbose) {
+        // print ast formatted
+        ast::Printer printer(std::cout, 0);
+        printer.printRoot(*tree->getRoot());
+    }
 
-    std::cout << "Parsed file - " << filepath << " :" << std::endl;
-    auto root = parser.parseRoot();
-    printer.printRoot(*root);
-
-    return 0;
+    return BuildResult(std::move(tree));
 }
+
+} // namespace driver
+} // namespace perun
