@@ -8,7 +8,8 @@ DriverError::DriverError(const std::string&& filename, const std::string&& text)
     : support::Error(), filename(std::move(filename)), text(std::move(text)) {}
 
 const std::string DriverError::getMessage() const {
-    return filename + ": " + text + "\n";
+    auto fileString = filename.empty() ? "" : filename + ": ";
+    return fileString + "error: " + text + "\n";
 }
 
 } // namespace perun
