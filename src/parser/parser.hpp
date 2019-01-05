@@ -124,8 +124,11 @@ private:
     std::string tokenToString(size_t index) const;
     uint64_t parseNumber(size_t index) const;
 
+    void errorAtEnd(const std::string&& message, size_t token);
+    void errorPos(const std::string&& message, size_t pos);
     void error(const std::string&& message, size_t token);
     void error(const std::string&& message, const Token& token);
+    void errorWithLoc(const std::string&& message, const ast::Loc&& loc);
 };
 
 } // namespace parser

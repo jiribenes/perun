@@ -38,7 +38,7 @@ std::unique_ptr<ast::Root> Parser::parseRoot() {
         root->setEOFToken(tokenIndex);
         return root;
     } else {
-        error("invalid token, expected 'EOF'", tokenIndex);
+        errorAtEnd("invalid token, expected 'EOF'", tokenIndex);
         throw 42;
     }
 }
@@ -154,12 +154,11 @@ std::unique_ptr<ast::VarDecl> Parser::parseVarDecl(bool mandatory) {
         expr = parseExpr(true);
     }
 
+    size_t semicolonToken = tokenIndex;
     if (!consumeToken(Token::Kind::Semicolon)) {
-        error("expected semicolon after VarDecl", tokenIndex);
+        errorAtEnd("expected semicolon after VarDecl", tokenIndex);
         // continue as if we got a semicolon
     }
-
-    size_t semicolonToken = tokenIndex;
 
     return std::make_unique<ast::VarDecl>(isConst, std::move(identifier),
                                           std::move(typeExpr), std::move(expr),
@@ -254,13 +253,14 @@ std::unique_ptr<ast::FnDecl> Parser::parseFnDecl(bool mandatory) {
     auto body = parseBlock(false);
 
     if (body == nullptr) { // empty body
+        semicolonToken = tokenIndex;
+
         if (!consumeToken(Token::Kind::Semicolon)) {
-            error("expected semicolon after FnDecl when it is only a prototype",
-                  tokenIndex);
+            errorAtEnd(
+                "expected semicolon after FnDecl when it is only a prototype",
+                tokenIndex);
             // continue as if we got ';'
         }
-
-        semicolonToken = tokenIndex;
     }
 
     return std::make_unique<ast::FnDecl>(
@@ -285,11 +285,11 @@ std::unique_ptr<ast::Return> Parser::parseReturn(bool mandatory) {
 
     auto&& expr = parseExpr(false);
 
+    size_t semicolonToken = tokenIndex;
     if (consumeToken(Token::Kind::Semicolon) == nullptr) {
-        error("expected semicolon after Return", tokenIndex);
+        errorAtEnd("expected semicolon after Return", tokenIndex);
         // continue as if we got ';'
     }
-    size_t semicolonToken = tokenIndex;
 
     return std::make_unique<ast::Return>(std::move(expr), returnToken,
                                          semicolonToken);
@@ -359,7 +359,7 @@ std::unique_ptr<ast::GroupedExpr> Parser::parseGroupedExpr(bool mandatory) {
     auto&& expr = parseExpr(true);
 
     if (consumeToken(Token::Kind::RParen) == nullptr) {
-        error("expected ')' in GroupedExpr", tokenIndex);
+        errorAtEnd("expected ')' in GroupedExpr", tokenIndex);
         // continue as if we got ')'
     }
     rParenToken = tokenIndex;
@@ -912,12 +912,28 @@ uint64_t Parser::parseNumber(size_t index) const {
     return std::strtoll(realStr, nullptr, radix);
 }
 
+void Parser::errorAtEnd(const std::string&& message, size_t token) {
+    auto&& tok = getToken(token);
+    size_t endPos = tok.end;
+    ast::Loc loc = tree.getLocFromPos(endPos);
+    errorWithLoc(std::move(message), std::move(loc));
+}
+
+void Parser::errorPos(const std::string&& message, size_t pos) {
+    ast::Loc loc = tree.getLocFromPos(pos);
+    errorWithLoc(std::move(message), std::move(loc));
+}
+
 void Parser::error(const std::string&& message, size_t token) {
     error(std::move(message), getToken(token));
 }
 
 void Parser::error(const std::string&& message, const Token& token) {
     ast::Loc loc = tree.getLocFromToken(token);
+    errorWithLoc(std::move(message), std::move(loc));
+}
+
+void Parser::errorWithLoc(const std::string&& message, const ast::Loc&& loc) {
     const std::string sourceLine =
         source.substr(loc.line_start_pos, loc.lineLength());
     const std::string filenameCopy = tree.getFilename();
