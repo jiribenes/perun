@@ -787,7 +787,14 @@ ast::SuffixOp Parser::parseSuffixOp() {
 void Parser::fetchToken() {
     Token token = tokenizer.nextToken();
 
-    if (token.getKind() != Token::Kind::Invalid) {
+    while (token.isOneOf(Token::Kind::LineComment, Token::Kind::DocComment)) {
+        // skip all line comments and doc comments
+        // TODO: parse doc comments as a part of the AST
+        //       attached to the node they belong to
+        token = tokenizer.nextToken();
+    }
+
+    if (token.isNot(Token::Kind::Invalid)) {
         // this possibly invalidates all ptrs/refs into tokens
         tokens.push_back(token);
         return;
