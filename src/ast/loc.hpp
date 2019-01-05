@@ -22,7 +22,7 @@ struct Loc {
 
     /// Get the length of the line
     constexpr size_t lineLength() const {
-    	return line_end_pos - line_start_pos;
+        return line_end_pos - line_start_pos;
     }
 };
 
