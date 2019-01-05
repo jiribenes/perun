@@ -39,15 +39,15 @@ public:
         root = std::move(r);
     }
 
+    const std::vector<parser::Token>& getTokens() const { return tokens; }
+    std::vector<parser::Token>& getTokensMut() { return tokens; }
+
     const std::vector<ErrorPtr>& getErrors() const { return errors; }
     std::vector<ErrorPtr>& getErrorsMut() { return errors; }
     bool hasErrors() const { return !errors.empty(); }
     void addError(ErrorPtr&& error_ptr) {
         errors.push_back(std::move(error_ptr));
     }
-
-    const std::vector<parser::Token>& getTokens() const { return tokens; }
-    std::vector<parser::Token>& getTokensMut() { return tokens; }
 
     /// Returns a relative location from a position
     Loc getLocFromPos(const size_t pos, const size_t start = 0) const;
@@ -68,9 +68,9 @@ private:
     const std::string source;
     std::unique_ptr<Root> root;
 
-    std::vector<ErrorPtr> errors;
-
     std::vector<parser::Token> tokens;
+
+    std::vector<ErrorPtr> errors;
 };
 
 } // namespace ast
