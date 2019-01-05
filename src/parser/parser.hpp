@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include "error.hpp"
 #include "token.hpp"
 #include "tokenizer.hpp"
 
@@ -10,6 +11,8 @@ namespace perun {
 
 // pre-declared as opaque to avoid unnecessary include
 namespace ast {
+class Tree;
+
 class Root;
 
 class Stmt;
@@ -39,11 +42,26 @@ namespace parser {
 /// Hand-made recursive descent parser
 class Parser {
 public:
-    explicit Parser(const std::string& source)
-        : source(source), tokenizer(source) {}
+    /// Expects a tree with an empty root
+    /// -> see ast::Tree::get on how to call this properly
+    explicit Parser(ast::Tree& tree);
 
-    // parsing functions for nodes
+    // top-level parsing function
     std::unique_ptr<ast::Root> parseRoot();
+
+private:
+    ast::Tree& tree;
+
+    const std::string& source;
+    std::vector<Token>& tokens;
+    std::vector<std::unique_ptr<support::Error>>& errors;
+
+    Tokenizer tokenizer;
+
+    size_t tokenIndex = 0;
+    bool hasTokens = false; // represents a dummy '-1' token index if false
+
+    // parsing functions for nodes:
     std::unique_ptr<ast::Stmt> parseTopLevelDecl(bool mandatory);
 
     // statements:
@@ -78,15 +96,6 @@ public:
     ast::InfixOp parseCompareOp();
     ast::SuffixOp parseSuffixOp();
 
-private:
-    const std::string& source;
-    Tokenizer tokenizer;
-
-    std::vector<Token> tokens{};
-
-    size_t tokenIndex = 0;
-    bool hasTokens = false; // represents a dummy '-1' token index if false
-
     /// gets a token from the tokenizer and puts it into tokens
     void fetchToken();
 
@@ -107,10 +116,16 @@ private:
     /// until any new token is added into tokens
     const Token& currentToken() { return tokens[tokenIndex]; }
 
+    const Token& getToken(size_t i) {
+        assert(i <= tokenIndex && hasTokens);
+        return tokens[i];
+    }
+
     std::string tokenToString(size_t index) const;
     uint64_t parseNumber(size_t index) const;
 
-    [[noreturn]] void error(const std::string& message);
+    void error(const std::string&& message, size_t token);
+    void error(const std::string&& message, const Token& token);
 };
 
 } // namespace parser

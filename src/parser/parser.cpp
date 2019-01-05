@@ -6,9 +6,14 @@
 #include "../ast/literal.hpp"
 #include "../ast/node.hpp"
 #include "../ast/stmt.hpp"
+#include "../ast/tree.hpp"
 
 namespace perun {
 namespace parser {
+
+Parser::Parser(ast::Tree& tree)
+    : tree(tree), source(tree.getSource()), tokens(tree.getTokensMut()),
+      errors(tree.getErrorsMut()), tokenizer(tree.getSource()) {}
 
 // Root := TLD* EOF
 std::unique_ptr<ast::Root> Parser::parseRoot() {
@@ -27,7 +32,8 @@ std::unique_ptr<ast::Root> Parser::parseRoot() {
         root->setEOFToken(tokenIndex);
         return root;
     } else {
-        error("invalid token, expected 'EOF'");
+        error("invalid token, expected 'EOF'", tokenIndex);
+        throw;
     }
 }
 
@@ -47,7 +53,8 @@ std::unique_ptr<ast::Stmt> Parser::parseTopLevelDecl(bool mandatory) {
         return nullptr;
     }
 
-    error("invalid top level decl");
+    error("invalid top level decl", tokenIndex);
+    throw;
 }
 
 // statements:
@@ -73,7 +80,8 @@ std::unique_ptr<ast::Stmt> Parser::parseStmt(bool mandatory) {
         return nullptr;
     }
 
-    error("invalid stmt");
+    error("invalid stmt", tokenIndex);
+    throw;
 }
 
 // Block := '{' Stmt* '}'
@@ -86,7 +94,8 @@ std::unique_ptr<ast::Block> Parser::parseBlock(bool mandatory) {
             return nullptr;
         }
 
-        error("expected '{' in Block");
+        error("expected '{' in Block", tokenIndex);
+        throw;
     }
 
     size_t lBraceIndex = tokenIndex;
@@ -99,6 +108,11 @@ std::unique_ptr<ast::Block> Parser::parseBlock(bool mandatory) {
         }
 
         auto stmt = parseStmt(true);
+        if (stmt == nullptr) {
+            // we couldn't parse a statement
+            break;
+        }
+
         stmts.push_back(std::move(stmt));
     }
 
@@ -114,7 +128,8 @@ std::unique_ptr<ast::VarDecl> Parser::parseVarDecl(bool mandatory) {
     } else if (consumeToken(Token::Kind::KeywordConst)) {
         isConst = true;
     } else if (mandatory) {
-        error("invalid token - expected 'var' or 'const'");
+        error("invalid token - expected 'var' or 'const'", tokenIndex);
+        throw;
     } else {
         return nullptr;
     }
@@ -134,7 +149,8 @@ std::unique_ptr<ast::VarDecl> Parser::parseVarDecl(bool mandatory) {
     }
 
     if (!consumeToken(Token::Kind::Semicolon)) {
-        error("expected semicolon");
+        error("expected semicolon after VarDecl", tokenIndex);
+        // continue as if we got a semicolon
     }
 
     size_t semicolonToken = tokenIndex;
@@ -149,7 +165,8 @@ std::unique_ptr<ast::ParamDecl> Parser::parseParamDecl() {
     auto identifier = parseIdentifier(false);
     if (identifier != nullptr) {
         if (consumeToken(Token::Kind::Colon) == nullptr) {
-            error("expected colon");
+            error("expected colon", tokenIndex);
+            throw;
         }
     }
 
@@ -164,7 +181,8 @@ std::vector<std::unique_ptr<ast::ParamDecl>> Parser::parseParamDeclList() {
     std::vector<std::unique_ptr<ast::ParamDecl>> params{};
 
     if (!consumeToken(Token::Kind::LParen)) {
-        error("expected '('");
+        error("expected '('", tokenIndex);
+        throw;
     }
 
     bool expectBreak = false;
@@ -172,7 +190,9 @@ std::vector<std::unique_ptr<ast::ParamDecl>> Parser::parseParamDeclList() {
         if (consumeToken(Token::Kind::RParen)) {
             break;
         } else if (expectBreak) {
-            error("expected '}' after no comma found previously in list");
+            error("expected '}' after no comma found previously in list",
+                  tokenIndex);
+            throw;
         }
 
         auto param = parseParamDecl();
@@ -211,7 +231,8 @@ std::unique_ptr<ast::FnDecl> Parser::parseFnDecl(bool mandatory) {
             return nullptr;
         }
 
-        error("unexpected token - expected 'fn' keyword");
+        error("unexpected token - expected 'fn' keyword", tokenIndex);
+        throw;
     }
     fnToken = tokenIndex;
 
@@ -228,7 +249,9 @@ std::unique_ptr<ast::FnDecl> Parser::parseFnDecl(bool mandatory) {
 
     if (body == nullptr) { // empty body
         if (!consumeToken(Token::Kind::Semicolon)) {
-            error("expected semicolon");
+            error("expected semicolon after FnDecl when it is only a prototype",
+                  tokenIndex);
+            // continue as if we got ';'
         }
 
         semicolonToken = tokenIndex;
@@ -249,13 +272,16 @@ std::unique_ptr<ast::Return> Parser::parseReturn(bool mandatory) {
     } else if (!mandatory) {
         return nullptr;
     } else {
-        error("expected keyword 'return' while parsing return node");
+        error("expected keyword 'return' while parsing return node",
+              tokenIndex);
+        throw;
     }
 
     auto&& expr = parseExpr(false);
 
     if (consumeToken(Token::Kind::Semicolon) == nullptr) {
-        error("expected semicolon");
+        error("expected semicolon after Return", tokenIndex);
+        // continue as if we got ';'
     }
     size_t semicolonToken = tokenIndex;
 
@@ -272,7 +298,8 @@ std::unique_ptr<ast::IfStmt> Parser::parseIfStmt(bool mandatory) {
             return nullptr;
         }
 
-        error("expected 'if' in IfStmt");
+        error("expected 'if' in IfStmt", tokenIndex);
+        throw;
     }
 
     ifToken = tokenIndex;
@@ -306,7 +333,8 @@ std::unique_ptr<ast::Expr> Parser::parseExpr(bool mandatory) {
         return nullptr;
     }
 
-    error("invalid expr");
+    error("invalid expr", tokenIndex);
+    throw;
 }
 
 // GroupedExpr := '(' Expr ')'
@@ -317,14 +345,16 @@ std::unique_ptr<ast::GroupedExpr> Parser::parseGroupedExpr(bool mandatory) {
             return nullptr;
         }
 
-        error("expected '(' in GroupedExpr");
+        error("expected '(' in GroupedExpr", tokenIndex);
+        throw;
     }
     lParenToken = tokenIndex;
 
     auto&& expr = parseExpr(true);
 
     if (consumeToken(Token::Kind::RParen) == nullptr) {
-        error("expected ')' in GroupedExpr");
+        error("expected ')' in GroupedExpr", tokenIndex);
+        // continue as if we got ')'
     }
     rParenToken = tokenIndex;
 
@@ -343,7 +373,8 @@ std::unique_ptr<ast::Identifier> Parser::parseIdentifier(bool mandatory) {
         return nullptr;
     }
 
-    error("could not parse identifier");
+    error("could not parse identifier", tokenIndex);
+    throw;
 }
 
 // PrimaryExpr := Integer | 'true' | 'false' | 'nil' | 'undefined'
@@ -376,7 +407,9 @@ std::unique_ptr<ast::Expr> Parser::parsePrimaryExpr(bool mandatory) {
     if (!mandatory) {
         return nullptr;
     }
-    error("could not parse primary expr");
+
+    error("could not parse primary expr", tokenIndex);
+    throw;
 }
 
 // PrefixExpr := PrefixOp PrefixExpr | SuffixExpr
@@ -402,7 +435,8 @@ std::unique_ptr<ast::Expr> Parser::parseMultExpr(bool mandatory) {
             return nullptr;
         }
 
-        error("expected PrefixExpr in MultExpr");
+        error("expected PrefixExpr in MultExpr", tokenIndex);
+        throw;
     }
 
     while (true) {
@@ -434,7 +468,8 @@ std::unique_ptr<ast::Expr> Parser::parseAddExpr(bool mandatory) {
             return nullptr;
         }
 
-        error("expected MultExpr in AddExpr");
+        error("expected MultExpr in AddExpr", tokenIndex);
+        throw;
     }
 
     while (true) {
@@ -466,7 +501,8 @@ std::unique_ptr<ast::Expr> Parser::parseShiftExpr(bool mandatory) {
             return nullptr;
         }
 
-        error("expected AddExpr in ShiftExpr");
+        error("expected AddExpr in ShiftExpr", tokenIndex);
+        throw;
     }
 
     while (true) {
@@ -498,7 +534,8 @@ std::unique_ptr<ast::Expr> Parser::parseBitExpr(bool mandatory) {
             return nullptr;
         }
 
-        error("expected ShiftExpr in BitExpr");
+        error("expected ShiftExpr in BitExpr", tokenIndex);
+        throw;
     }
 
     while (true) {
@@ -530,7 +567,8 @@ std::unique_ptr<ast::Expr> Parser::parseCompareExpr(bool mandatory) {
             return nullptr;
         }
 
-        error("expected BitExpr in CompareExpr");
+        error("expected BitExpr in CompareExpr", tokenIndex);
+        throw;
     }
 
     while (true) {
@@ -562,7 +600,8 @@ std::unique_ptr<ast::Expr> Parser::parseSuffixExpr(bool mandatory) {
             return nullptr;
         }
 
-        error("expected PrimExpr in SuffixExpr");
+        error("expected PrimExpr in SuffixExpr", tokenIndex);
+        throw;
     }
 
     while (true) {
@@ -742,8 +781,22 @@ ast::SuffixOp Parser::parseSuffixOp() {
 void Parser::fetchToken() {
     Token token = tokenizer.nextToken();
 
-    // this possibly invalidates all ptrs/refs into tokens
-    tokens.push_back(token);
+    if (token.getKind() != Token::Kind::Invalid) {
+        // this possibly invalidates all ptrs/refs into tokens
+        tokens.push_back(token);
+        return;
+    }
+
+    // tokenizer had an error
+    if (!tokenizer.getError().empty()) {
+        std::string errorString = tokenizer.getError();
+        error(std::move(errorString), token);
+        throw;
+    }
+
+    // tokenizer produced a bad token
+    error("tokenizer produced an invalid token", tokenIndex);
+    throw;
 }
 
 const Token& Parser::peekNextToken() {
@@ -846,12 +899,18 @@ uint64_t Parser::parseNumber(size_t index) const {
     return std::strtoll(realStr, nullptr, radix);
 }
 
-// TODO: better error handling
-[[noreturn]] void Parser::error(const std::string& message) {
-    std::cerr << "Encountered an error!" << std::endl;
-    std::cerr << message << std::endl;
+void Parser::error(const std::string&& message, size_t token) {
+    error(std::move(message), getToken(token));
+}
 
-    exit(0);
+void Parser::error(const std::string&& message, const Token& token) {
+    ast::Loc loc = tree.getLocFromToken(token);
+    const std::string sourceLine =
+        source.substr(loc.line_start_pos, loc.lineLength());
+    const std::string filenameCopy = tree.getFilename();
+    errors.push_back(std::make_unique<ParseError>(
+        std::move(filenameCopy), std::move(loc), std::move(message),
+        std::move(sourceLine)));
 }
 
 } // namespace parser
