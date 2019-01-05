@@ -1,6 +1,7 @@
 #ifndef PERUN_PARSER_TOKENIZER_HPP
 #define PERUN_PARSER_TOKENIZER_HPP
 
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -24,10 +25,10 @@ public:
     // from this 'input'
     void dumpToken(const Token& token) const;
 
+    const std::string& getError() const { return error; }
+
 private:
     const std::string& input;
-
-    [[noreturn]] void error(const std::string& message);
 
     enum class State {
         Invalid = -1,
@@ -76,6 +77,9 @@ private:
 
     /// current position in the input
     size_t pos;
+
+    /// current error
+    std::string error = "";
 };
 
 } // namespace parser

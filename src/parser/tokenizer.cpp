@@ -32,7 +32,9 @@ Token Tokenizer::nextToken() {
     // complete is for avoiding goto
     // - indicates when a token is complete so we can stop this loop
     bool complete = false;
-    while (pos < input.size() && !complete) {
+
+    // Note: this.error is for the very same purpose as complete
+    while (pos < input.size() && !complete && error.empty()) {
         // current char
         const char c = input.at(pos);
 
@@ -272,7 +274,9 @@ Token Tokenizer::nextToken() {
                 break;
             }
             case '\n': {
-                error("newline is not allowed in a string!");
+                error = "newline is not allowed in a string!";
+                pos--;
+                break;
             }
             case '\\': {
                 state = State::StringEscape;
@@ -289,7 +293,9 @@ Token Tokenizer::nextToken() {
             // TODO: handle escapes properly
             switch (c) {
             case '\n': {
-                error("newline is not allowed in a string!");
+                error = "newline is not allowed in a string!";
+                pos--;
+                break;
             }
             default: {
                 state = State::String;
@@ -797,7 +803,7 @@ Token Tokenizer::nextToken() {
 
     // if we have reached the end of the input and still haven't finalized a
     // single token:
-    if (pos == input.size() && !complete) {
+    if (pos == input.size() && !complete && error.empty()) {
         // finalize tokens
         switch (state) {
 
@@ -920,12 +926,20 @@ Token Tokenizer::nextToken() {
 
         // error cases
         case State::StringEscape: {
-            error("trailing escape in string!");
+            error = "trailing escape in string!";
+            pos--;
+            break;
         }
         case State::Invalid: {
             assert(false);
         }
         }
+    }
+
+    if (!error.empty()) {
+        Token invalidToken = Token(Token::Kind::Invalid, pos);
+        invalidToken.end = pos;
+        return invalidToken;
     }
 
     token.end = pos;
@@ -937,14 +951,6 @@ void Tokenizer::dumpToken(const Token& token) const {
     const std::string source = input.substr(token.start, token.length());
     std::cerr << getTokenName(token.getKind()) << " \"" << source << "\""
               << std::endl;
-}
-
-// TODO: better error handling
-[[noreturn]] void Tokenizer::error(const std::string& message) {
-    std::cerr << "Encountered an error!" << std::endl;
-    std::cerr << message << std::endl;
-
-    exit(0);
 }
 
 } // namespace parser
