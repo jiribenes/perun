@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
         assert(tree != nullptr);
         if (tree->hasErrors()) {
             for (auto&& err : tree->getErrors()) {
-                std::cerr << err->getMessage();
+                std::cerr << err->getMessage() << std::endl;
             }
             return 1;
         }

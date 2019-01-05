@@ -54,6 +54,10 @@ BuildResult build(std::vector<std::string>& args) {
     auto&& tree = ast::Tree::get(std::move(file), std::move(source));
     assert(tree != nullptr);
 
+    if (tree->hasErrors()) {
+        return BuildResult(std::move(tree));
+    }
+
     if (verbose) {
         // print ast formatted
         ast::Printer printer(std::cout, 0);
