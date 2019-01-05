@@ -9,8 +9,20 @@
 
 using namespace perun;
 
+static void printUsage() {
+    std::cout << "Usage: perun [-h/--help] [-v/--verbose] <input>" << std::endl;
+}
+
 int main(int argc, char* argv[]) {
     std::vector<std::string> args(argv + 1, argv + argc);
+
+    for (auto&& arg : args) {
+        if (arg == "--help" || arg == "-h") {
+            printUsage();
+            return 0;
+        }
+    }
+
     auto&& result = driver::build(args);
 
     switch (result.getKind()) {
