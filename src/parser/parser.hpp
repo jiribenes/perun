@@ -128,10 +128,16 @@ private:
     std::string tokenToString(size_t index) const;
     uint64_t parseNumber(size_t index) const;
 
+    // Add error at the end of the specified token
     void errorAtEnd(const std::string&& message, size_t token);
-    void errorPos(const std::string&& message, size_t pos);
+
+    // Add error at the start of the specified token given byindex
     void error(const std::string&& message, size_t token);
+
+    // Add error at the start of the specified token
     void error(const std::string&& message, const Token& token);
+
+    // Add error to specific ast::Loc
     void errorWithLoc(const std::string&& message, const ast::Loc&& loc);
 };
 

@@ -1004,11 +1004,6 @@ void Parser::errorAtEnd(const std::string&& message, size_t token) {
     errorWithLoc(std::move(message), std::move(loc));
 }
 
-void Parser::errorPos(const std::string&& message, size_t pos) {
-    ast::Loc loc = tree.getLocFromPos(pos);
-    errorWithLoc(std::move(message), std::move(loc));
-}
-
 void Parser::error(const std::string&& message, size_t token) {
     error(std::move(message), getToken(token));
 }
