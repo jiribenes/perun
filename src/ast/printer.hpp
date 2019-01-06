@@ -15,6 +15,7 @@ class ParamDecl;
 class FnDecl;
 class Return;
 class IfStmt;
+class AssignStmt;
 
 class Expr;
 class Identifier;
@@ -31,6 +32,7 @@ class LiteralNil;
 class LiteralUndefined;
 
 // pre-declared ops
+enum class AssignOp : short;
 enum class PrefixOp : short;
 enum class InfixOp : short;
 enum class SuffixOp : short;
@@ -49,6 +51,7 @@ public:
     void printFnDecl(const FnDecl& fnDecl);
     void printReturn(const Return& ret);
     void printIfStmt(const IfStmt& ifStmt);
+    void printAssignStmt(const AssignStmt& assign);
 
     void printExpr(const Expr& expr);
     void printIdentifier(const Identifier& id);
@@ -65,6 +68,7 @@ public:
     void printLiteralUndefined(const LiteralUndefined& lit);
 
     // helper functions:
+    void printAssignOp(const AssignOp& op);
     void printPrefixOp(const PrefixOp& op);
     void printInfixOp(const InfixOp& op);
     void printSuffixOp(const SuffixOp& op);

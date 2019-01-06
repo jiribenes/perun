@@ -71,5 +71,13 @@ IfStmt::IfStmt(std::unique_ptr<Expr>&& condition, std::unique_ptr<Block>&& then,
       then(std::move(then)), otherwise(std::move(otherwise)), ifToken(ifToken),
       elseToken(elseToken) {}
 
+AssignStmt::AssignStmt(std::unique_ptr<Expr>&& lhs, std::unique_ptr<Expr>&& rhs,
+                       Op op, size_t opToken, size_t semicolonToken)
+    : Stmt(Node::Kind::AssignStmt), lhs(std::move(lhs)), rhs(std::move(rhs)),
+      op(op), opToken(opToken), semicolonToken(semicolonToken) {}
+
+size_t AssignStmt::firstTokenIndex() const { return lhs->firstTokenIndex(); }
+size_t AssignStmt::lastTokenIndex() const { return semicolonToken; }
+
 } // namespace ast
 } // namespace perun

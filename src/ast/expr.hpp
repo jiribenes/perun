@@ -95,18 +95,6 @@ private:
 enum class InfixOp : short {
     Invalid = -1,
 
-    // assign
-    Assign,
-    AssignBitAnd,
-    AssignBitOr,
-    AssignBitSHL,
-    AssignBitSHR,
-    AssignDiv,
-    AssignMod,
-    AssignMul,
-    AssignPlus,
-    AssignSub,
-
     // bitwise
     BitAnd,
     BitOr,

@@ -25,6 +25,7 @@ public:
         FnDecl,
         Return,
         IfStmt,
+        AssignStmt,
 
         // expressions:
         Identifier,

@@ -200,6 +200,50 @@ private:
     size_t ifToken, elseToken;
 };
 
+enum class AssignOp : short {
+    Invalid = -1,
+
+    Assign,
+    AssignBitAnd,
+    AssignBitOr,
+    AssignBitSHL,
+    AssignBitSHR,
+    AssignDiv,
+    AssignMod,
+    AssignMul,
+    AssignPlus,
+    AssignSub,
+};
+
+class AssignStmt : public Stmt {
+public:
+    using Op = AssignOp;
+
+    AssignStmt(std::unique_ptr<Expr>&& lhs, std::unique_ptr<Expr>&& rhs, Op op,
+               size_t opToken, size_t semicolonToken);
+
+    /// Predicates for checking the op
+    bool is(Op o) const { return op == o; }
+    bool isNot(Op o) const { return op != o; }
+    bool isOneOf(Op o1, Op o2) const { return is(o1) || is(o2); }
+    template <typename... Ts> bool isOneOf(Op o1, Op o2, Ts... os) const {
+        return is(o1) || isOneOf(o2, os...);
+    }
+
+    const Expr* getLHS() const { return lhs.get(); }
+    const Expr* getRHS() const { return rhs.get(); }
+    Op getOp() const { return op; }
+    size_t firstTokenIndex() const override;
+    size_t lastTokenIndex() const override;
+
+private:
+    std::unique_ptr<Expr> lhs;
+    std::unique_ptr<Expr> rhs;
+    Op op;
+    size_t opToken;
+    size_t semicolonToken;
+};
+
 } // namespace ast
 } // namespace perun
 

@@ -51,6 +51,10 @@ void Printer::printStmt(const Stmt& stmt) {
         printIfStmt(static_cast<const IfStmt&>(stmt));
         break;
     }
+    case Node::Kind::AssignStmt: {
+        printAssignStmt(static_cast<const AssignStmt&>(stmt));
+        break;
+    }
     default: {
         // TODO: raise error
         break;
@@ -189,6 +193,19 @@ void Printer::printIfStmt(const IfStmt& ifStmt) {
     os << '\n';
 }
 
+void Printer::printAssignStmt(const AssignStmt& assign) {
+    auto&& lhs = assign.getLHS();
+    auto&& rhs = assign.getRHS();
+
+    assert(lhs != nullptr && rhs != nullptr);
+
+    printExpr(*lhs);
+    os << ' ';
+    printAssignOp(assign.getOp());
+    os << ' ';
+    printExpr(*rhs);
+}
+
 void Printer::printExpr(const Expr& expr) {
     // TODO: use llvm RTTI
     switch (expr.getKind()) {
@@ -320,6 +337,52 @@ void Printer::printLiteralUndefined(const LiteralUndefined& lit) {
     os << "undefined";
 }
 
+void Printer::printAssignOp(const AssignOp& op) {
+    switch (op) {
+    case AssignOp::Assign: {
+        os << "=";
+        return;
+    }
+    case AssignOp::AssignBitAnd: {
+        os << "&=";
+        return;
+    }
+    case AssignOp::AssignBitOr: {
+        os << "|=";
+        return;
+    }
+    case AssignOp::AssignBitSHL: {
+        os << "<<=";
+        return;
+    }
+    case AssignOp::AssignBitSHR: {
+        os << ">>=";
+        return;
+    }
+    case AssignOp::AssignDiv: {
+        os << "/=";
+        return;
+    }
+    case AssignOp::AssignMod: {
+        os << "%=";
+        return;
+    }
+    case AssignOp::AssignMul: {
+        os << "*=";
+        return;
+    }
+    case AssignOp::AssignPlus: {
+        os << "+=";
+        return;
+    }
+    case AssignOp::AssignSub: {
+        os << "-=";
+        return;
+    }
+    default: { assert(false); }
+    }
+}
+
 void Printer::printPrefixOp(const PrefixOp& op) {
     switch (op) {
     case PrefixOp::Address: {
@@ -348,46 +411,6 @@ void Printer::printPrefixOp(const PrefixOp& op) {
 
 void Printer::printInfixOp(const InfixOp& op) {
     switch (op) {
-    case InfixOp::Assign: {
-        os << "=";
-        return;
-    }
-    case InfixOp::AssignBitAnd: {
-        os << "&=";
-        return;
-    }
-    case InfixOp::AssignBitOr: {
-        os << "|=";
-        return;
-    }
-    case InfixOp::AssignBitSHL: {
-        os << "<<=";
-        return;
-    }
-    case InfixOp::AssignBitSHR: {
-        os << ">>=";
-        return;
-    }
-    case InfixOp::AssignDiv: {
-        os << "/=";
-        return;
-    }
-    case InfixOp::AssignMod: {
-        os << "%=";
-        return;
-    }
-    case InfixOp::AssignMul: {
-        os << "*=";
-        return;
-    }
-    case InfixOp::AssignPlus: {
-        os << "+=";
-        return;
-    }
-    case InfixOp::AssignSub: {
-        os << "-=";
-        return;
-    }
     case InfixOp::BitAnd: {
         os << "&";
         return;

@@ -65,7 +65,7 @@ std::unique_ptr<ast::Stmt> Parser::parseTopLevelDecl(bool mandatory) {
 
 // statements:
 
-// Stmt := Return | IfStmt | VarDecl
+// Stmt := Return | IfStmt | VarDecl | AssignStmt
 std::unique_ptr<ast::Stmt> Parser::parseStmt(bool mandatory) {
     auto returnStmt = parseReturn(false);
     if (returnStmt != nullptr) {
@@ -80,6 +80,11 @@ std::unique_ptr<ast::Stmt> Parser::parseStmt(bool mandatory) {
     auto varDecl = parseVarDecl(false);
     if (varDecl != nullptr) {
         return varDecl;
+    }
+
+    auto assign = parseAssignStmt(false);
+    if (assign != nullptr) {
+        return assign;
     }
 
     if (!mandatory) {
@@ -324,6 +329,38 @@ std::unique_ptr<ast::IfStmt> Parser::parseIfStmt(bool mandatory) {
     return std::make_unique<ast::IfStmt>(std::move(expr), std::move(then),
                                          std::move(otherwise), ifToken,
                                          elseToken);
+}
+
+// AssignStmt := Expr AssignOp Expr ';'
+std::unique_ptr<ast::AssignStmt> Parser::parseAssignStmt(bool mandatory) {
+    std::unique_ptr<ast::Expr> lhs = parseExpr(false);
+    if (lhs == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected Expr in AssignStmt", tokenIndex);
+        throw 42;
+    }
+
+    auto op = parseAssignOp();
+    if (op == ast::AssignOp::Invalid) {
+        error("expected assign op", tokenIndex);
+        throw 42;
+    }
+
+    size_t opToken = tokenIndex;
+
+    auto&& rhs = parseExpr(true);
+
+    size_t semicolonToken = tokenIndex;
+    if (consumeToken(Token::Kind::Semicolon) == nullptr) {
+        errorAtEnd("expected semicolon after assignment", tokenIndex);
+        // continue as if we got ';'
+    }
+
+    return std::make_unique<ast::AssignStmt>(std::move(lhs), std::move(rhs), op,
+                                             opToken, semicolonToken);
 }
 
 // expressions:
@@ -626,6 +663,54 @@ std::unique_ptr<ast::Expr> Parser::parseSuffixExpr(bool mandatory) {
     }
 
     return expr;
+}
+
+// AssignOp := '&=' | '=' | '>>=' | '<<=' | '-=' | '%=' | '|=' | '+=' | '/=' |
+//             '*='
+ast::AssignOp Parser::parseAssignOp() {
+    auto token = consumeOneOf(
+        Token::Kind::AmpersandEq, Token::Kind::Eq,
+        Token::Kind::GreaterGreaterEq, Token::Kind::LessLessEq,
+        Token::Kind::MinusEq, Token::Kind::PercentEq, Token::Kind::PipeEq,
+        Token::Kind::PlusEq, Token::Kind::SlashEq, Token::Kind::StarEq);
+
+    if (token == nullptr) {
+        return ast::AssignOp::Invalid;
+    }
+
+    switch (token->getKind()) {
+    case Token::Kind::AmpersandEq: {
+        return ast::AssignOp::AssignBitAnd;
+    }
+    case Token::Kind::Eq: {
+        return ast::AssignOp::Assign;
+    }
+    case Token::Kind::GreaterGreaterEq: {
+        return ast::AssignOp::AssignBitSHR;
+    }
+    case Token::Kind::LessLessEq: {
+        return ast::AssignOp::AssignBitSHL;
+    }
+    case Token::Kind::MinusEq: {
+        return ast::AssignOp::AssignSub;
+    }
+    case Token::Kind::PercentEq: {
+        return ast::AssignOp::AssignMod;
+    }
+    case Token::Kind::PipeEq: {
+        return ast::AssignOp::AssignBitOr;
+    }
+    case Token::Kind::PlusEq: {
+        return ast::AssignOp::AssignPlus;
+    }
+    case Token::Kind::SlashEq: {
+        return ast::AssignOp::AssignDiv;
+    }
+    case Token::Kind::StarEq: {
+        return ast::AssignOp::AssignMul;
+    }
+    default: { assert(false); }
+    }
 }
 
 // PrefixOp := '&' | '~' | '!' | '-' | '?'

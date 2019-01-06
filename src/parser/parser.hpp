@@ -23,6 +23,7 @@ class ParamDecl;
 class FnDecl;
 class Return;
 class IfStmt;
+class AssignStmt;
 
 class Expr;
 class GroupedExpr;
@@ -32,6 +33,7 @@ class InfixExpr;
 class SuffixExpr;
 
 // pre-declared ops
+enum class AssignOp : short;
 enum class PrefixOp : short;
 enum class InfixOp : short;
 enum class SuffixOp : short;
@@ -73,6 +75,7 @@ private:
     std::unique_ptr<ast::FnDecl> parseFnDecl(bool mandatory);
     std::unique_ptr<ast::Return> parseReturn(bool mandatory);
     std::unique_ptr<ast::IfStmt> parseIfStmt(bool mandatory);
+    std::unique_ptr<ast::AssignStmt> parseAssignStmt(bool mandatory);
 
     // expressions:
     std::unique_ptr<ast::Expr> parseExpr(bool mandatory);
@@ -88,6 +91,7 @@ private:
     std::unique_ptr<ast::Expr> parseSuffixExpr(bool mandatory);
 
     // operations:
+    ast::AssignOp parseAssignOp();
     ast::PrefixOp parsePrefixOp();
     ast::InfixOp parseMultOp();
     ast::InfixOp parseAddOp();
