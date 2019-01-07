@@ -40,6 +40,9 @@ struct Token {
         return end - start;
     }
 
+    /// Returns a name of the token('s kind)
+    const char* getName() const;
+
     /// Start and end offsets from the beginning of the file
     size_t start;
     size_t end; // undefined by default

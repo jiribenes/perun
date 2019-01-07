@@ -5,6 +5,8 @@
 namespace perun {
 namespace parser {
 
+const char* Token::getName() const { return getTokenName(kind); }
+
 // this should be synchronized with Token::Kind
 const char* getTokenName(Token::Kind kind) {
     switch (kind) {
