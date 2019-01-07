@@ -10,118 +10,15 @@ namespace parser {
 struct Token {
     enum class Kind {
         Invalid = -1,
-        EndOfFile = 0,
-
-        // parens
-        LParen,
-        RParen,
-        LBrace,
-        RBrace,
-        LBracket,
-        RBracket,
-
-        // operators
-        Ampersand,
-        AmpersandEq,
-        At,
-        Backslash,
-        Bang, // !
-        BangEq,
-        Caret,
-        Colon,
-        ColonColon,
-        Comma,
-        Dot,
-        DotDot,
-        DotDotDot,
-        Eq,
-        EqEq,
-        EqGreater, // =>
-        Greater,   // >
-        GreaterEq,
-        GreaterGreater,
-        GreaterGreaterEq,
-        Hash,
-        Less, // <
-        LessEq,
-        LessLess,
-        LessLessEq,
-        Minus,
-        MinusEq,
-        MinusGreater, // ->
-        Percent,
-        PercentEq,
-        PercentPercent,
-        PercentPercentEq,
-        Pipe,
-        PipeEq,
-        Plus,
-        PlusEq,
-        PlusPlus,
-        Question, // ?
-        QuestionEq,
-        Semicolon,
-        Slash, // /
-        SlashEq,
-        Star,
-        StarEq,
-        StarStar,
-        Tilde,
-        TildeEq,
-
-        // keywords
-        KeywordAlign,
-        KeywordAnd,
-        KeywordAsm,
-        KeywordBreak,
-        KeywordCatch,
-        KeywordConst,
-        KeywordContinue,
-        KeywordDefer,
-        KeywordElse,
-        KeywordEnum,
-        KeywordError,
-        KeywordExport,
-        KeywordExtern,
-        KeywordFalse,
-        KeywordFn,
-        KeywordFor,
-        KeywordIf,
-        KeywordIn,
-        KeywordMatch,
-        KeywordNil,
-        KeywordNot,
-        KeywordOr,
-        KeywordPriv,
-        KeywordPub,
-        KeywordPure,
-        KeywordReturn,
-        KeywordStruct,
-        KeywordThis,
-        KeywordTrue,
-        KeywordTry,
-        KeywordUndefined,
-        KeywordUnion,
-        KeywordUse,
-        KeywordVar,
-        KeywordVolatile,
-        KeywordWhile,
-
-        // literals
-        LiteralChar,
-        LiteralFloat,
-        LiteralInteger,
-
-        LiteralCRawString,
-        LiteralCString,
-        LiteralRawString,
-        LiteralString,
-
-        Identifier,
-
-        // comments
-        LineComment,
-        DocComment,
+// This uses special macros defined in `tokenkinds.def`.
+// See that file for more details on how this works.
+#define TOKEN(kind, name) kind,
+#define KEYWORD(kind, name) Keyword##kind,
+#define LITERAL(kind, name) Literal##kind,
+#include "tokenkinds.def"
+#undef TOKEN
+#undef KEYWORD
+#undef LITERAL
     };
 
     Token(Kind kind, size_t start) : start(start), kind(kind) {}
@@ -153,49 +50,22 @@ private:
 
 const char* getTokenName(Token::Kind kind);
 
-// TODO: ideally hide everything regarding keywords in the Token class
+// Thin wrapper to allow a keyword table
 struct Keyword {
     const char* str;
     const Token::Kind kind;
 };
 
 static const Keyword keywords[] = {
-    {"align", Token::Kind::KeywordAlign},
-    {"and", Token::Kind::KeywordAnd},
-    {"asm", Token::Kind::KeywordAsm},
-    {"break", Token::Kind::KeywordBreak},
-    {"catch", Token::Kind::KeywordCatch},
-    {"const", Token::Kind::KeywordConst},
-    {"continue", Token::Kind::KeywordContinue},
-    {"defer", Token::Kind::KeywordDefer},
-    {"else", Token::Kind::KeywordElse},
-    {"enum", Token::Kind::KeywordEnum},
-    {"error", Token::Kind::KeywordError},
-    {"export", Token::Kind::KeywordExport},
-    {"extern", Token::Kind::KeywordExtern},
-    {"false", Token::Kind::KeywordFalse},
-    {"fn", Token::Kind::KeywordFn},
-    {"for", Token::Kind::KeywordFor},
-    {"if", Token::Kind::KeywordIf},
-    {"in", Token::Kind::KeywordIn},
-    {"match", Token::Kind::KeywordMatch},
-    {"nil", Token::Kind::KeywordNil},
-    {"not", Token::Kind::KeywordNot},
-    {"or", Token::Kind::KeywordOr},
-    {"priv", Token::Kind::KeywordPriv},
-    {"pub", Token::Kind::KeywordPub},
-    {"pure", Token::Kind::KeywordPure},
-    {"return", Token::Kind::KeywordReturn},
-    {"struct", Token::Kind::KeywordStruct},
-    {"this", Token::Kind::KeywordThis},
-    {"true", Token::Kind::KeywordTrue},
-    {"try", Token::Kind::KeywordTry},
-    {"undefined", Token::Kind::KeywordUndefined},
-    {"union", Token::Kind::KeywordUnion},
-    {"use", Token::Kind::KeywordUse},
-    {"var", Token::Kind::KeywordVar},
-    {"volatile", Token::Kind::KeywordVolatile},
-    {"while", Token::Kind::KeywordWhile},
+// This uses special macros defined in `tokenkinds.def`.
+// See that file for more details on how this works.
+#define KEYWORD(kind, name) {name, Token::Kind::Keyword##kind},
+#define TOKEN(kind, name)   /* empty */
+#define LITERAL(kind, name) /* empty */
+#include "tokenkinds.def"
+#undef KEYWORD
+#undef TOKEN
+#undef LITERAL
 };
 
 bool isKeyword(const std::string& str);
