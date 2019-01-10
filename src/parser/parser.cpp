@@ -38,7 +38,9 @@ std::unique_ptr<ast::Root> Parser::parseRoot() {
         root->setEOFToken(tokenIndex);
         return root;
     } else {
-        errorAtEnd("invalid token, expected 'EOF'", tokenIndex);
+        auto&& tok = peekNextToken();
+        const std::string tokName = tok.getName();
+        error("invalid token '" + tokName + "', expected 'EOF'", tok);
         throw 42;
     }
 }
@@ -59,7 +61,11 @@ std::unique_ptr<ast::Stmt> Parser::parseTopLevelDecl(bool mandatory) {
         return nullptr;
     }
 
-    error("invalid top level decl", tokenIndex);
+    auto&& tok = peekNextToken();
+    const std::string tokName = tok.getName();
+    error("invalid token '" + tokName +
+              "', expected 'const', 'var' or 'fn' (top level decl)",
+          tok);
     throw 42;
 }
 
@@ -91,7 +97,12 @@ std::unique_ptr<ast::Stmt> Parser::parseStmt(bool mandatory) {
         return nullptr;
     }
 
-    error("invalid stmt", tokenIndex);
+    auto&& tok = peekNextToken();
+    const std::string tokName = tok.getName();
+    error(
+        "invalid token '" + tokName +
+            "', expected 'return', 'if', 'const', 'var' or 'identifier' (stmt)",
+        tok);
     throw 42;
 }
 
