@@ -133,7 +133,7 @@ void Printer::printFnDecl(const FnDecl& fnDecl) {
     { // params
         os << "(";
 
-        size_t paramsSize = fnDecl.getParams().size();
+        size_t paramsSize = fnDecl.getParamsSize();
         for (size_t i = 0; i < paramsSize; ++i) {
             auto&& param = fnDecl.getParam(i);
             printParamDecl(*param);

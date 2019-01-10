@@ -117,6 +117,8 @@ public:
         return params;
     }
 
+    size_t getParamsSize() const { return params.size(); }
+
     const ParamDecl* getParam(size_t i) const {
         assert(i < params.size());
         return params[i].get();
