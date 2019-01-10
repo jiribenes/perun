@@ -197,9 +197,15 @@ void Printer::printAssignStmt(const AssignStmt& assign) {
     auto&& lhs = assign.getLHS();
     auto&& rhs = assign.getRHS();
 
-    assert(lhs != nullptr && rhs != nullptr);
+    assert(rhs != nullptr);
 
-    printExpr(*lhs);
+    if (lhs != nullptr) {
+        printExpr(*lhs);
+    } else /* is it a discarding assignment (has underscore as LHS) */ {
+        os << '_';
+
+        assert(assign.is(AssignOp::Assign)); // sanity check
+    }
     os << ' ';
     printAssignOp(assign.getOp());
     os << ' ';

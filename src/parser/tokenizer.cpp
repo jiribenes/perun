@@ -201,6 +201,11 @@ Token Tokenizer::nextToken() {
                 state = State::Tilde;
                 break;
             }
+            case '_': {
+                token.setKind(Token::Kind::Identifier);
+                state = State::Underscore;
+                break;
+            }
             default: {
                 if (isNonzeroNumeric(c)) { // 1..9
                     state = State::Integer;
@@ -680,6 +685,20 @@ Token Tokenizer::nextToken() {
             }
             break;
         }
+        case State::Underscore: {
+            if (isIdentifier(c) || isNumeric(c)) { // alphanumeric | '_'
+                // '_' is followed by an identifier char =>
+                // '_' belongs to the identifier itself
+                state = State::Identifier;
+                break;
+            } else {
+                // the '_' is on its own
+                token.setKind(Token::Kind::Underscore);
+                complete = true;
+                break;
+            }
+            break;
+        }
         case State::Identifier: {
             if (isIdentifier(c) || isNumeric(c)) { // alphanumeric | '_'
                 // add to the identifier
@@ -814,7 +833,8 @@ Token Tokenizer::nextToken() {
         case State::Integer:
         case State::BinaryInteger:
         case State::OctalInteger:
-        case State::HexInteger: {
+        case State::HexInteger:
+        case State::Underscore: {
             // these are fine without finalizing
             break;
         }

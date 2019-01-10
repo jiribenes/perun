@@ -59,6 +59,7 @@ private:
         Slash,
         Star,
         Tilde,
+        Underscore,
 
         Identifier,
 

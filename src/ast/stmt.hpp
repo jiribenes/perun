@@ -237,7 +237,7 @@ public:
     size_t lastTokenIndex() const override;
 
 private:
-    std::unique_ptr<Expr> lhs;
+    std::unique_ptr<Expr> lhs; // can be null if it is discarded
     std::unique_ptr<Expr> rhs;
     Op op;
     size_t opToken;

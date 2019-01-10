@@ -342,24 +342,32 @@ std::unique_ptr<ast::IfStmt> Parser::parseIfStmt(bool mandatory) {
                                          elseToken);
 }
 
-// AssignStmt := Expr AssignOp Expr ';'
+// AssignStmt := ('_' | Expr) AssignOp Expr ';'
 std::unique_ptr<ast::AssignStmt> Parser::parseAssignStmt(bool mandatory) {
-    std::unique_ptr<ast::Expr> lhs = parseExpr(false);
-    if (lhs == nullptr) {
-        if (!mandatory) {
-            return nullptr;
+    std::unique_ptr<ast::Expr> lhs = nullptr;
+    ast::AssignOp op = ast::AssignOp::Invalid;
+    if (consumeToken(Token::Kind::Underscore) == nullptr) {
+        lhs = std::move(parseExpr(false));
+        if (lhs == nullptr) {
+            if (!mandatory) {
+                return nullptr;
+            }
+
+            error("expected '_' or Expr in AssignStmt", tokenIndex);
+            throw 42;
         }
-
-        error("expected Expr in AssignStmt", tokenIndex);
-        throw 42;
+        op = parseAssignOp();
+        if (op == ast::AssignOp::Invalid) {
+            error("expected assign op", tokenIndex);
+            throw 42;
+        }
+    } else {
+        if (consumeToken(Token::Kind::Eq) == nullptr) {
+            error("expected '='", tokenIndex);
+            throw 42;
+        }
+        op = ast::AssignOp::Assign;
     }
-
-    auto op = parseAssignOp();
-    if (op == ast::AssignOp::Invalid) {
-        error("expected assign op", tokenIndex);
-        throw 42;
-    }
-
     size_t opToken = tokenIndex;
 
     auto&& rhs = parseExpr(true);
