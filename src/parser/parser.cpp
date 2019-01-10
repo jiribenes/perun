@@ -712,7 +712,7 @@ ast::AssignOp Parser::parseAssignOp() {
         return ast::AssignOp::AssignBitOr;
     }
     case Token::Kind::PlusEq: {
-        return ast::AssignOp::AssignPlus;
+        return ast::AssignOp::AssignAdd;
     }
     case Token::Kind::SlashEq: {
         return ast::AssignOp::AssignDiv;

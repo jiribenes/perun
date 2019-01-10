@@ -204,6 +204,7 @@ enum class AssignOp : short {
     Invalid = -1,
 
     Assign,
+    AssignAdd,
     AssignBitAnd,
     AssignBitOr,
     AssignBitSHL,
@@ -211,7 +212,6 @@ enum class AssignOp : short {
     AssignDiv,
     AssignMod,
     AssignMul,
-    AssignPlus,
     AssignSub,
 };
 

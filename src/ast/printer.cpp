@@ -343,6 +343,10 @@ void Printer::printAssignOp(const AssignOp& op) {
         os << "=";
         return;
     }
+    case AssignOp::AssignAdd: {
+        os << "+=";
+        return;
+    }
     case AssignOp::AssignBitAnd: {
         os << "&=";
         return;
@@ -369,10 +373,6 @@ void Printer::printAssignOp(const AssignOp& op) {
     }
     case AssignOp::AssignMul: {
         os << "*=";
-        return;
-    }
-    case AssignOp::AssignPlus: {
-        os << "+=";
         return;
     }
     case AssignOp::AssignSub: {
