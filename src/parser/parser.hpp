@@ -3,6 +3,8 @@
 
 #include <memory>
 
+#include "../support/optional.hpp"
+
 #include "error.hpp"
 #include "token.hpp"
 #include "tokenizer.hpp"
@@ -89,6 +91,8 @@ private:
     std::unique_ptr<ast::Expr> parseBitExpr(bool mandatory);
     std::unique_ptr<ast::Expr> parseCompareExpr(bool mandatory);
     std::unique_ptr<ast::Expr> parseSuffixExpr(bool mandatory);
+    support::Optional<std::vector<std::unique_ptr<ast::Expr>>>
+    parseExprList(bool mandatory);
 
     // operations:
     ast::AssignOp parseAssignOp();

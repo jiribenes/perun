@@ -684,6 +684,47 @@ std::unique_ptr<ast::Expr> Parser::parseSuffixExpr(bool mandatory) {
     return expr;
 }
 
+// ExprList := '(' (Expr ',')* Expr? ')'
+support::Optional<std::vector<std::unique_ptr<ast::Expr>>>
+Parser::parseExprList(bool mandatory) {
+    // TODO: Generalize this and ParamDeclList?
+    std::vector<std::unique_ptr<ast::Expr>> args{};
+
+    if (!consumeToken(Token::Kind::LParen)) {
+        if (!mandatory) {
+            return support::Optional<std::vector<std::unique_ptr<ast::Expr>>>();
+        }
+
+        error("expected '('", tokenIndex);
+        throw 42;
+    }
+
+    bool expectBreak = false;
+    while (true) {
+        if (consumeToken(Token::Kind::RParen)) {
+            break;
+        } else if (expectBreak) {
+            error("expected ')' after no comma found previously in list",
+                  tokenIndex);
+            throw 42;
+        }
+
+        auto&& arg = parseExpr(false);
+        if (arg == nullptr) {
+            expectBreak = true;
+            continue;
+        }
+
+        args.push_back(std::move(arg));
+
+        if (!consumeToken(Token::Kind::Comma)) {
+            expectBreak = true;
+        }
+    }
+
+    return support::Optional<std::vector<std::unique_ptr<ast::Expr>>>(
+        std::move(args));
+}
 // AssignOp := '&=' | '=' | '>>=' | '<<=' | '-=' | '%=' | '|=' | '+=' | '/=' |
 //             '*='
 ast::AssignOp Parser::parseAssignOp() {
