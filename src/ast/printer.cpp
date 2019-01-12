@@ -235,6 +235,10 @@ void Printer::printExpr(const Expr& expr) {
         printSuffixExpr(static_cast<const SuffixExpr&>(expr));
         break;
     }
+    case Node::Kind::CallExpr: {
+        printCallExpr(static_cast<const CallExpr&>(expr));
+        break;
+    }
     case Node::Kind::LiteralInteger:
     case Node::Kind::LiteralString:
     case Node::Kind::LiteralBoolean:
@@ -291,6 +295,30 @@ void Printer::printSuffixExpr(const SuffixExpr& expr) {
 
     printExpr(*lhs);
     printSuffixOp(expr.getOp());
+}
+
+void Printer::printCallExpr(const CallExpr& expr) {
+    auto&& fn = expr.getFn();
+
+    assert(fn != nullptr);
+
+    printExpr(*fn);
+
+    { // args
+        os << '(';
+
+        size_t argsSize = expr.getArgsSize();
+        for (size_t i = 0; i < argsSize; ++i) {
+            auto&& arg = expr.getArg(i);
+
+            printExpr(*arg);
+
+            if (i + 1 < argsSize) {
+                os << ", ";
+            }
+        }
+        os << ')';
+    }
 }
 
 void Printer::printLiteral(const Literal& lit) {

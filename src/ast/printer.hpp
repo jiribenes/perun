@@ -23,6 +23,7 @@ class GroupedExpr;
 class PrefixExpr;
 class InfixExpr;
 class SuffixExpr;
+class CallExpr;
 
 class Literal;
 class LiteralInteger;
@@ -59,6 +60,7 @@ public:
     void printPrefixExpr(const PrefixExpr& expr);
     void printInfixExpr(const InfixExpr& expr);
     void printSuffixExpr(const SuffixExpr& expr);
+    void printCallExpr(const CallExpr& expr);
 
     void printLiteral(const Literal& lit);
     void printLiteralInteger(const LiteralInteger& lit);

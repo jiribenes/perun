@@ -33,6 +33,7 @@ public:
         PrefixExpr,
         InfixExpr,
         SuffixExpr,
+        CallExpr,
 
         // literals:
         LiteralInteger,

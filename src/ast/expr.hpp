@@ -187,6 +187,38 @@ private:
     size_t opToken;
 };
 
+class CallExpr : public Expr {
+public:
+    CallExpr(std::unique_ptr<Expr>&& fn,
+             std::vector<std::unique_ptr<Expr>>&& args, size_t leftParenToken,
+             size_t rightParenToken)
+        : Expr(Node::Kind::CallExpr), fn(std::move(fn)), args(std::move(args)),
+          leftParenToken(leftParenToken), rightParenToken(rightParenToken) {}
+
+    const Expr* getFn() const { return fn.get(); }
+
+    const std::vector<std::unique_ptr<Expr>>& getArgs() const { return args; }
+
+    size_t getArgsSize() const { return args.size(); }
+
+    const Expr* getArg(size_t i) const {
+        assert(i < args.size());
+        return args[i].get();
+    }
+
+    void addArg(std::unique_ptr<Expr>&& arg) { args.push_back(std::move(arg)); }
+
+    size_t firstTokenIndex() const override { return fn->firstTokenIndex(); }
+    size_t lastTokenIndex() const override { return rightParenToken; }
+
+private:
+    std::unique_ptr<Expr> fn;
+    std::vector<std::unique_ptr<Expr>> args;
+
+    size_t leftParenToken;
+    size_t rightParenToken;
+};
+
 } // namespace ast
 } // namespace perun
 

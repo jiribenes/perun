@@ -677,8 +677,20 @@ std::unique_ptr<ast::Expr> Parser::parseSuffixExpr(bool mandatory) {
             continue;
         }
 
-        // TODO: add function call, array access, slice, member access
+        // or a function call
+        size_t leftParenToken = tokenIndex;
+        auto&& fnCallArgs = parseExprList(false);
+        if (fnCallArgs.hasValue()) {
+            size_t rightParenToken = tokenIndex;
+            auto&& newExpr = std::make_unique<ast::CallExpr>(
+                std::move(expr), std::move(fnCallArgs.moveValue()),
+                leftParenToken, rightParenToken);
+            expr = std::move(newExpr);
+            continue;
+        }
+
         break;
+        // TODO: add array access, slice, member access
     }
 
     return expr;
@@ -725,6 +737,30 @@ Parser::parseExprList(bool mandatory) {
     return support::Optional<std::vector<std::unique_ptr<ast::Expr>>>(
         std::move(args));
 }
+
+// CallExpr := Expr ExprList
+std::unique_ptr<ast::CallExpr> Parser::parseCallExpr(bool mandatory) {
+    // Note: this is actually here just for completeness,
+    //       it is never called in the code (so far...)
+    std::unique_ptr<ast::Expr> expr = parseExpr(false);
+    if (expr == nullptr) {
+        if (!mandatory) {
+            return nullptr;
+        }
+
+        error("expected Expr in CallExpr", tokenIndex);
+        throw 42;
+    }
+
+    size_t leftParenToken = tokenIndex;
+    auto&& args = parseExprList(true);
+    size_t rightParenToken = tokenIndex;
+
+    return std::make_unique<ast::CallExpr>(std::move(expr),
+                                           std::move(args.moveValue()),
+                                           leftParenToken, rightParenToken);
+}
+
 // AssignOp := '&=' | '=' | '>>=' | '<<=' | '-=' | '%=' | '|=' | '+=' | '/=' |
 //             '*='
 ast::AssignOp Parser::parseAssignOp() {

@@ -33,6 +33,7 @@ class Identifier;
 class PrefixExpr;
 class InfixExpr;
 class SuffixExpr;
+class CallExpr;
 
 // pre-declared ops
 enum class AssignOp : short;
@@ -93,6 +94,7 @@ private:
     std::unique_ptr<ast::Expr> parseSuffixExpr(bool mandatory);
     support::Optional<std::vector<std::unique_ptr<ast::Expr>>>
     parseExprList(bool mandatory);
+    std::unique_ptr<ast::CallExpr> parseCallExpr(bool mandatory);
 
     // operations:
     ast::AssignOp parseAssignOp();
