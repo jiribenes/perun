@@ -211,7 +211,7 @@ std::vector<std::unique_ptr<ast::ParamDecl>> Parser::parseParamDeclList() {
         if (consumeToken(Token::Kind::RParen)) {
             break;
         } else if (expectBreak) {
-            error("expected '}' after no comma found previously in list",
+            error("expected ')' after no comma found previously in list",
                   tokenIndex);
             throw 42;
         }
@@ -654,7 +654,7 @@ std::unique_ptr<ast::Expr> Parser::parseCompareExpr(bool mandatory) {
     return expr;
 }
 
-// SuffixExpr := PrimExpr (SuffixOp | FnCall)*
+// SuffixExpr := PrimExpr (SuffixOp | CallExpr)*
 std::unique_ptr<ast::Expr> Parser::parseSuffixExpr(bool mandatory) {
     std::unique_ptr<ast::Expr> expr = parsePrimaryExpr(false);
     if (expr == nullptr) {
