@@ -226,14 +226,17 @@ Token Tokenizer::nextToken() {
         case State::Zero: {
             switch (c) {
             case 'b': {
+                pos++;
                 state = State::BinaryInteger;
                 break;
             }
             case 'o': {
+                pos++;
                 state = State::OctalInteger;
                 break;
             }
             case 'x': {
+                pos++;
                 state = State::HexInteger;
                 break;
             }
@@ -786,7 +789,7 @@ Token Tokenizer::nextToken() {
             break;
         }
         case State::OctalInteger: {
-            auto isOctal = [](const char c) -> bool {
+            constexpr auto isOctal = [](const char c) -> bool {
                 return c >= '0' && c <= '7';
             };
 
@@ -798,7 +801,7 @@ Token Tokenizer::nextToken() {
             break;
         }
         case State::HexInteger: {
-            auto isHexadecimal = [](const char c) -> bool {
+            constexpr auto isHexadecimal = [](const char c) -> bool {
                 return isNumeric(c) || (c >= 'A' && c <= 'F');
             };
 
