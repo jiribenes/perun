@@ -11,7 +11,7 @@ The Perun C++ compiler is __under heavy development__ as it is being rewritten f
 
 ### Instructions
 
-#### Linux
+#### Linux & Make
 
 ```
 mkdir build
@@ -21,3 +21,14 @@ make
 cd ..
 build/perun $YOUR_FILE.per
 ```
+
+#### Windows
+
+##### JetBrains CLion or Visual Studio 2017+
+
+Just open the top-level folder as a project
+and build it. You can then run the produced binary
+from the command line or using the dedicated button.
+
+_Note: VS2017 has not been tested yet but it should support
+CMake as its build/project files_
