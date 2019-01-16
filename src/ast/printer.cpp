@@ -189,8 +189,6 @@ void Printer::printIfStmt(const IfStmt& ifStmt) {
         os << " else ";
         printBlock(*otherwise);
     }
-
-    os << '\n';
 }
 
 void Printer::printAssignStmt(const AssignStmt& assign) {
@@ -210,6 +208,8 @@ void Printer::printAssignStmt(const AssignStmt& assign) {
     printAssignOp(assign.getOp());
     os << ' ';
     printExpr(*rhs);
+
+    os << ';';
 }
 
 void Printer::printExpr(const Expr& expr) {
