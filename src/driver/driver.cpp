@@ -26,29 +26,29 @@ static bool hasFlag(std::string flag, std::vector<std::string>& args) {
 BuildResult build(std::vector<std::string>& args) {
     bool verbose = hasFlag("--verbose", args) || hasFlag("-v", args);
 
+    // process all remaining arguments - they should be all params and not flags
     for (auto&& arg : args) {
         if (arg.empty() || arg[0] == '-') {
             return BuildResult(std::make_unique<DriverError>(
-                "", "unsupported option '" + arg + "'"));
+                "unsupported option '" + arg + "'"));
         }
     }
 
     if (args.empty()) {
-        return BuildResult(std::make_unique<DriverError>("", "no input file"));
+        return BuildResult(std::make_unique<DriverError>("no input file"));
     }
 
     if (args.size() != 1) {
         return BuildResult(
-            std::make_unique<DriverError>("", "only one input file allowed"));
+            std::make_unique<DriverError>("only one input file allowed"));
     }
 
     const std::string file = args[0];
 
     std::string source = support::readFile(file);
     if (source.empty()) {
-        const std::string filename_copy = file;
         return BuildResult(std::make_unique<DriverError>(
-            std::move(filename_copy), "could not load file"));
+            "could not load file: '" + file + "'"));
     }
 
     auto&& tree = ast::Tree::get(std::move(file), std::move(source));

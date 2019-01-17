@@ -7,14 +7,13 @@ namespace perun {
 
 class DriverError final : public support::Error {
 public:
-    DriverError(const std::string&& filename, const std::string&& text);
+    DriverError(const std::string&& text);
 
     ~DriverError() {}
 
     const std::string getMessage() const override;
 
 private:
-    const std::string filename;
     const std::string text;
 };
 
