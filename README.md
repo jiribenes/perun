@@ -1,5 +1,10 @@
 # Perun Programming Language
 
+**Update \[2021-01-01\]:** The rewrite has been abandoned and this repository is now archived.
+The original version of Perun with its source code is private, but available upon request.
+
+---
+
 The Perun C++ compiler is __under heavy development__ as it is being rewritten from a prototype.
 
 ## Building
